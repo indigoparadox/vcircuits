@@ -59,6 +59,10 @@ namespace Dashboard {
                 var config_options = config_root.get_object_member( "options" );
                 int dash_w = (int)config_options.get_int_member( "width" );
                 int dash_h = (int)config_options.get_int_member( "height" );
+                var dash_decorated = config_options.get_boolean_member( "decorated" );
+                if( !dash_decorated ) {
+                    this.window.set_decorated( false );
+                }
                 this.window.set_default_size( dash_w, dash_h );
         
                 background_str = config_options.get_string_member( "background" );
