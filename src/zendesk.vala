@@ -10,6 +10,7 @@ namespace Dashboard {
 
         public DashletZendesk( Dashboard dashboard_in ) {
             this.dashboard = dashboard_in;
+            this.style_provider = new Gtk.CssProvider();
         }
 
         private void parse_tickets( string msg ) {
@@ -45,11 +46,10 @@ namespace Dashboard {
             }
         }
 
-        public override void build( Gtk.Grid grid, Gtk.CssProvider style ) {
+        public override void build( Gtk.Box box ) {
             this.listbox = new ListBox();
-            this.listbox.get_style_context().add_provider( style, Gtk.STYLE_PROVIDER_PRIORITY_USER );
-            grid.attach( this.listbox, this.dashboard.x_iter, this.dashboard.y_iter, 2, 2 );
-            this.dashboard.y_iter += 2;
+            this.listbox.get_style_context().add_provider( this.style_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER );
+            box.add( this.listbox );
         }
 
         public override void config( Json.Object config_obj ) {

@@ -23,14 +23,15 @@ namespace Dashboard {
             this.dashboard = dashboard_in;
             this.inputs = new List<InputOutput>();
             this.outputs = new List<InputOutput>();
+            this.style_provider = new Gtk.CssProvider();
         }
 
-        public override void build( Gtk.Grid grid, Gtk.CssProvider style ) {
+        public override void build( Gtk.Box box ) {
             foreach( var output in this.outputs ) {
                 var output_lbl = new Gtk.Label( output.name );
-                grid.attach( output_lbl, this.dashboard.x_iter, this.dashboard.y_iter, 2, 1 );
+                box.add( output_lbl );
+                //output_lbl.set_css_name( "output-title" );
                 output_lbl.set_alignment( 0, 0 );
-                this.dashboard.y_iter++;
 
                 var input_grid = new Gtk.Grid();
                 int input_y_iter = 0;
@@ -43,7 +44,8 @@ namespace Dashboard {
 
                     var input_btn = new Gtk.Button();
                     input_btn.set_label( input.name );
-                    input_btn.get_style_context().add_provider( style, Gtk.STYLE_PROVIDER_PRIORITY_USER );
+                    input_btn.set_css_name( "rest-input-button" );
+                    input_btn.get_style_context().add_provider( this.style_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER );
                     input_btn.clicked.connect( ( b ) => {
                         var click_url = this.url
                             .replace( "{input}", input.id.to_string() )
@@ -55,6 +57,7 @@ namespace Dashboard {
                     } );
                     input_grid.attach( input_btn, input_x_iter, input_y_iter, 1, 1 );
 
+                    // Move right, or down if we've reached max columns.
                     input_x_iter++;
                     if( this.columns <= input_x_iter ) {
                         input_y_iter++;
@@ -62,8 +65,7 @@ namespace Dashboard {
                     }
                 }
 
-                grid.attach( input_grid, this.dashboard.x_iter, this.dashboard.y_iter, 2, 1 );
-                this.dashboard.y_iter++;
+                box.add( input_grid );
             }
         }
 
