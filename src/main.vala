@@ -7,8 +7,6 @@ List<Dashlet> dashlets = null;
 
 public class Dashlet {
     public string title;
-    //public Gdk.RGBA foreground;
-    //public Gdk.RGBA background;
     public string background;
     public string foreground;
 }
@@ -33,7 +31,7 @@ public void parse_tickets( string msg, DashletZendesk dashlet_zd ) {
         var msg_results = msg_root.get_array_member( "results" );
 
         foreach( var ticket_iter in msg_results.get_elements() ) {
-            //int count = 0;
+            // Get ticket properties.
             var ticket_obj = ticket_iter.get_object();
             var ticket_subject = ticket_obj.get_string_member( "subject" );
             stdout.printf( "%s\n", ticket_subject );
@@ -41,11 +39,6 @@ public void parse_tickets( string msg, DashletZendesk dashlet_zd ) {
             // Add ticket to listbox.
             dashlet_zd.listbox.add( new Label( ticket_subject ) );
             dashlet_zd.listbox.show_all();
-
-            /* dashlet_zd.listbox.@foreach( () => count++ );
-            for( var i = 0 ; count > i ; i++ ) {
-                Label label = dashlet_zd.listbox.get_row_at_index( i ).
-            } */
         }
 
     } catch( GLib.Error e ) {
@@ -54,8 +47,6 @@ public void parse_tickets( string msg, DashletZendesk dashlet_zd ) {
 }
 
 public void on_message_tickets( Client m, void* data, Mosquitto.Message msg ) {
-    //stdout.printf( "%s\n", msg.payload );
-
     foreach( var dashlet in dashlets ) {
         if( dashlet is DashletZendesk ) {
             DashletZendesk dashlet_zd = dashlet as DashletZendesk;
@@ -66,8 +57,6 @@ public void on_message_tickets( Client m, void* data, Mosquitto.Message msg ) {
             parse_tickets( msg.payload, dashlet_zd );
         }
     }
-
-    
 }
 
 public void on_connect( Client m, void* data, int res ) {
@@ -103,9 +92,6 @@ public Gtk.Window build_dashboard( Gtk.Window window ) {
             DashletZendesk dashlet_zd = dashlet as DashletZendesk;
             dashlet_zd.listbox = new ListBox();
             dashlet_zd.listbox.get_style_context().add_provider( style, Gtk.STYLE_PROVIDER_PRIORITY_USER );
-            //dashlet_zd.listbox.override_background_color( Gtk.StateFlags.NORMAL, dashlet.background );
-            //dashlet_zd.listbox.override_color( Gtk.StateFlags.NORMAL, dashlet.foreground );
-            //dashlet_zd.listbox.set_size_request( 200, 200 );
             grid.attach( dashlet_zd.listbox, 0, y_iter, 2, 2 );
             y_iter += 2;
         }
@@ -146,9 +132,6 @@ public static int main( string[] args ) {
         window.set_default_size( dash_w, dash_h );
 
         background_str = config_options.get_string_member( "background" );
-        //Gdk.RGBA color = Gdk.RGBA();
-        //color.parse( color_str );
-        //window.override_background_color( Gtk.StateFlags.NORMAL, color );
         
         // Parse Dashlet config.
         var config_dashboard = config_root.get_array_member( "dashboard" );
@@ -169,15 +152,7 @@ public static int main( string[] args ) {
 
             if( null != dashlet_out ) {
                 dashlet_out.title = dashlet_obj.get_string_member( "title" );
-                
-                //color_str = dashlet_obj.get_string_member( "background" );
-                //dashlet_out.background = Gdk.RGBA();
-                //dashlet_out.background.parse( color_str );
                 dashlet_out.background = dashlet_obj.get_string_member( "background" );
-
-                //color_str = dashlet_obj.get_string_member( "foreground" );
-                //dashlet_out.foreground = Gdk.RGBA();
-                //dashlet_out.background.parse( color_str );
                 dashlet_out.foreground = dashlet_obj.get_string_member( "foreground" );
             }
         }
@@ -199,7 +174,6 @@ public static int main( string[] args ) {
     m.message_callback_set( on_message_tickets );
     m.username_pw_set( mqtt_user, mqtt_pass );
     m.connect( mqtt_host, (int)mqtt_port, 60 );
-    //m.user_data_set( tickets )
 
     // Update Mosquitto every couple seconds. 
     GLib.Timeout.add( 2000, () => {
