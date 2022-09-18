@@ -7,6 +7,7 @@ namespace Dashboard {
 
     public abstract class Dashlet {
         public string title;
+        public string font_size;
         public string background;
         public string foreground;
         public Dashboard dashboard;
@@ -50,6 +51,7 @@ namespace Dashboard {
         public void config( string config_path ) {
             Json.Parser parser = new Json.Parser();
             string background_str = "";
+            string foreground_str = "";
             
             try {
                 parser.load_from_file( config_path );
@@ -66,6 +68,7 @@ namespace Dashboard {
                 this.window.set_default_size( dash_w, dash_h );
         
                 background_str = config_options.get_string_member( "background" );
+                foreground_str = config_options.get_string_member( "foreground" );
                 
                 // Parse Dashlet config.
                 var config_dashboard = config_root.get_array_member( "dashboard" );
@@ -79,8 +82,8 @@ namespace Dashboard {
                         dashlet_out = new DashletZendesk( this );
                         break;
                     
-                    case "hdmi":
-                        dashlet_out = new DashletHDMI( this );
+                    case "rest":
+                        dashlet_out = new DashletREST( this );
                         break;
 
                     case "break":
@@ -92,6 +95,7 @@ namespace Dashboard {
                         dashlets.append( dashlet_out );
                         dashlet_out.config( dashlet_obj );
                         dashlet_out.title = dashlet_obj.get_string_member( "title" );
+                        dashlet_out.font_size = dashlet_obj.get_string_member( "size" );
                         dashlet_out.background = dashlet_obj.get_string_member( "background" );
                         dashlet_out.foreground = dashlet_obj.get_string_member( "foreground" );
                     }
@@ -111,8 +115,8 @@ namespace Dashboard {
             // Try to style the dashboard window.
             try {
                 var style = new Gtk.CssProvider();
-                style.load_from_data( "* {background: %s}".printf(
-                    background_str ) );
+                style.load_from_data( "* {background: %s; color: %s}".printf(
+                    background_str, foreground_str ) );
                 this.window.get_style_context().add_provider( style, Gtk.STYLE_PROVIDER_PRIORITY_USER );
             } catch( GLib.Error e ) {
                 stderr.printf( "style error: %s\n", e.message );
@@ -123,7 +127,7 @@ namespace Dashboard {
             // Window setup.
             var grid = new Grid();
 
-            grid.set_row_spacing( 5 );
+            grid.set_row_spacing( 3 );
 
             foreach( var dashlet in dashlets ) {
                 var style = new Gtk.CssProvider();
@@ -133,7 +137,7 @@ namespace Dashboard {
                     var label = new Label( dashlet.title );
                     grid.attach( label, this.x_iter, this.y_iter, 2, 1 );
                     this.y_iter++;
-                    style.load_from_data( "* {font-weight: bold}" );
+                    style.load_from_data( "* {font-size: 1.1em; text-decoration: underline; font-weight: bolder}" );
                     label.get_style_context().add_provider( style, Gtk.STYLE_PROVIDER_PRIORITY_USER );
                     label.set_alignment( 0, 0 );
                 }
@@ -141,8 +145,8 @@ namespace Dashboard {
                 // Draw dashlet using its individual drawing method.
                 style = new Gtk.CssProvider();
                 try {
-                    style.load_from_data( "* {background: %s; color: %s}".printf(
-                        dashlet.background, dashlet.foreground ) );
+                    style.load_from_data( "* {font-size: %s; padding: 1px; background: %s; color: %s}".printf(
+                        dashlet.font_size, dashlet.background, dashlet.foreground ) );
                 } catch( GLib.Error e ) {
                     stderr.printf( "style error: %s\n", e.message );
                 }

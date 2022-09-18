@@ -6,12 +6,12 @@ using Curl;
 
 namespace Dashboard {
 
-    public class DashletHDMI : Dashlet {
+    public class DashletREST : Dashlet {
 
         private class InputOutput {
             public string name;
             public bool is4k;
-            public int id;
+            public string id;
         }
 
         string url;
@@ -19,7 +19,7 @@ namespace Dashboard {
         List<InputOutput> outputs;
         int columns;
 
-        public DashletHDMI( Dashboard dashboard_in ) {
+        public DashletREST( Dashboard dashboard_in ) {
             this.dashboard = dashboard_in;
             this.inputs = new List<InputOutput>();
             this.outputs = new List<InputOutput>();
@@ -43,6 +43,7 @@ namespace Dashboard {
 
                     var input_btn = new Gtk.Button();
                     input_btn.set_label( input.name );
+                    input_btn.get_style_context().add_provider( style, Gtk.STYLE_PROVIDER_PRIORITY_USER );
                     input_btn.clicked.connect( ( b ) => {
                         var click_url = this.url
                             .replace( "{input}", input.id.to_string() )
@@ -85,7 +86,7 @@ namespace Dashboard {
                 var input_obj = input_iter.get_object();
                 input.is4k = input_obj.get_boolean_member( "is4k" );
                 input.name = input_obj.get_string_member( "name" );
-                input.id = (int)input_obj.get_int_member( "id" );
+                input.id = input_obj.get_string_member( "id" );
                 this.inputs.append( input );
             }
 
@@ -94,7 +95,7 @@ namespace Dashboard {
                 var output_obj = output_iter.get_object();
                 output.is4k = output_obj.get_boolean_member( "is4k" );
                 output.name = output_obj.get_string_member( "name" );
-                output.id = (int)output_obj.get_int_member( "id" );
+                output.id = output_obj.get_string_member( "id" );
                 this.outputs.append( output );
             }
         }
