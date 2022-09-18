@@ -60,14 +60,18 @@ namespace Dashboard {
                     case "zendesk":
                         dashlet_out = new DashletZendesk( this );
                         break;
+                    
+                    case "hdmi":
+                        dashlet_out = new DashletHDMI( this );
+                        break;
                     }
         
                     if( null != dashlet_out ) {
+                        dashlets.append( dashlet_out );
                         dashlet_out.config( dashlet_obj );
                         dashlet_out.title = dashlet_obj.get_string_member( "title" );
                         dashlet_out.background = dashlet_obj.get_string_member( "background" );
                         dashlet_out.foreground = dashlet_obj.get_string_member( "foreground" );
-                        dashlets.append( dashlet_out );
                     }
                 }
         
