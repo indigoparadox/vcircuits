@@ -6,6 +6,8 @@ OBJDIR := obj
 PACKAGES := --vapidir src --pkg libmosquitto --pkg gtk+-3.0 --pkg json-glib-1.0
 
 OBJECTS := \
+	src/dashboard.vala \
+	src/zendesk.vala \
 	src/main.vala
 
 MD := mkdir -v -p
@@ -13,7 +15,7 @@ MD := mkdir -v -p
 all: circuits
 
 circuits: $(OBJECTS)
-	valac -o $@ $< $(PACKAGES)
+	valac -o $@ $^ $(PACKAGES)
 
 .PHONY: clean
 
