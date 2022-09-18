@@ -17,9 +17,23 @@ namespace Dashboard {
         public abstract void config( Json.Object config_obj );
     }
 
+    public class DashletBreak : Dashlet {
+        public DashletBreak( Dashboard dashboard_in ) {
+            this.dashboard = dashboard_in;
+        }
+        public override void build( Gtk.Grid grid, Gtk.CssProvider style ) {
+            this.dashboard.x_iter += 2;
+            this.dashboard.y_iter = 0;
+        }
+        public override void mqtt_connect( Mosquitto.Client m ) {}
+        public override void mqtt_message( Mosquitto.Client m, Mosquitto.Message msg ) {}
+        public override void config( Json.Object config_obj ) {}
+    }
+
     public class Dashboard {
         public List<Dashlet> dashlets;
         public int y_iter;
+        public int x_iter;
         public Mosquitto.Client m;
         
         private Gtk.Window window;
@@ -64,6 +78,10 @@ namespace Dashboard {
                     case "hdmi":
                         dashlet_out = new DashletHDMI( this );
                         break;
+
+                    case "break":
+                        dashlet_out = new DashletBreak( this );
+                        break;
                     }
         
                     if( null != dashlet_out ) {
@@ -101,18 +119,29 @@ namespace Dashboard {
             // Window setup.
             var grid = new Grid();
 
+            grid.set_row_spacing( 5 );
+
             foreach( var dashlet in dashlets ) {
-                var label = new Label( dashlet.title );
-                grid.attach( label, 0, y_iter, 2, 1 );
-                this.y_iter++;
                 var style = new Gtk.CssProvider();
+
+                // Create dashlet title.
+                if( null != dashlet.title ) {    
+                    var label = new Label( dashlet.title );
+                    grid.attach( label, this.x_iter, this.y_iter, 2, 1 );
+                    this.y_iter++;
+                    style.load_from_data( "* {font-weight: bold}" );
+                    label.get_style_context().add_provider( style, Gtk.STYLE_PROVIDER_PRIORITY_USER );
+                    label.set_alignment( 0, 0 );
+                }
+
+                // Draw dashlet using its individual drawing method.
+                style = new Gtk.CssProvider();
                 try {
                     style.load_from_data( "* {background: %s; color: %s}".printf(
                         dashlet.background, dashlet.foreground ) );
                 } catch( GLib.Error e ) {
                     stderr.printf( "style error: %s\n", e.message );
                 }
-
                 dashlet.build( grid, style );
             }
 

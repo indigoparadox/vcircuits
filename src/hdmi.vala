@@ -17,6 +17,7 @@ namespace Dashboard {
         string url;
         List<InputOutput> inputs;
         List<InputOutput> outputs;
+        int columns;
 
         public DashletHDMI( Dashboard dashboard_in ) {
             this.dashboard = dashboard_in;
@@ -27,7 +28,8 @@ namespace Dashboard {
         public override void build( Gtk.Grid grid, Gtk.CssProvider style ) {
             foreach( var output in this.outputs ) {
                 var output_lbl = new Gtk.Label( output.name );
-                grid.attach( output_lbl, 0, this.dashboard.y_iter, 2, 1 );
+                grid.attach( output_lbl, this.dashboard.x_iter, this.dashboard.y_iter, 2, 1 );
+                output_lbl.set_alignment( 0, 0 );
                 this.dashboard.y_iter++;
 
                 var input_grid = new Gtk.Grid();
@@ -53,13 +55,13 @@ namespace Dashboard {
                     input_grid.attach( input_btn, input_x_iter, input_y_iter, 1, 1 );
 
                     input_x_iter++;
-                    if( 3 < input_x_iter ) {
+                    if( this.columns <= input_x_iter ) {
                         input_y_iter++;
                         input_x_iter = 0;
                     }
                 }
 
-                grid.attach( input_grid, 0, this.dashboard.y_iter, 2, 1 );
+                grid.attach( input_grid, this.dashboard.x_iter, this.dashboard.y_iter, 2, 1 );
                 this.dashboard.y_iter++;
             }
         }
@@ -75,6 +77,8 @@ namespace Dashboard {
         public override void config( Json.Object config_obj ) {
             this.url = config_obj.get_string_member( "url" );
             stdout.printf( "url: %s\n", this.url );
+
+            this.columns = (int)config_obj.get_int_member( "columns" );
 
             foreach( var input_iter in config_obj.get_array_member( "inputs" ).get_elements() ) {
                 var input = new InputOutput();

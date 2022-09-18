@@ -33,7 +33,10 @@ namespace Dashboard {
                     stdout.printf( "%s\n", ticket_subject );
 
                     // Add ticket to listbox.
-                    this.listbox.add( new Label( ticket_subject ) );
+                    // TODO: Limit subject length.
+                    var subject_lbl = new Label( ticket_subject );
+                    subject_lbl.set_alignment( 0, 0 );
+                    this.listbox.add( subject_lbl );
                     this.listbox.show_all();
                 }
 
@@ -45,7 +48,7 @@ namespace Dashboard {
         public override void build( Gtk.Grid grid, Gtk.CssProvider style ) {
             this.listbox = new ListBox();
             this.listbox.get_style_context().add_provider( style, Gtk.STYLE_PROVIDER_PRIORITY_USER );
-            grid.attach( this.listbox, 0, this.dashboard.y_iter, 2, 2 );
+            grid.attach( this.listbox, this.dashboard.x_iter, this.dashboard.y_iter, 2, 2 );
             this.dashboard.y_iter += 2;
         }
 
