@@ -7,10 +7,10 @@ namespace Dashboard {
     public class DashletZendesk : Dashlet {
         public string topic;
         public ListBox listbox;
+        public string ticket_class;
 
         public DashletZendesk( Dashboard dashboard_in ) {
             this.dashboard = dashboard_in;
-            this.style_provider = new Gtk.CssProvider();
         }
 
         private void parse_tickets( string msg ) {
@@ -48,13 +48,16 @@ namespace Dashboard {
 
         public override void build( Gtk.Box box ) {
             this.listbox = new ListBox();
-            this.listbox.get_style_context().add_provider( this.style_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER );
+            var context = listbox.get_style_context();
+            context.add_class( "circuits-zendesk-tickets" );
+            context.add_class( this.ticket_class );
             box.add( this.listbox );
         }
 
         public override void config( Json.Object config_obj ) {
             this.topic = config_obj.get_string_member( "topic" );
             stdout.printf( "topic: %s\n", this.topic );
+            this.ticket_class = config_obj.get_string_member( "ticketclass" );
         }
 
         public override void mqtt_connect( Mosquitto.Client m ) {

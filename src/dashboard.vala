@@ -7,8 +7,6 @@ namespace Dashboard {
 
     public abstract class Dashlet {
         public string title;
-        public string style_text;
-        public Gtk.CssProvider style_provider;
         public Dashboard dashboard;
 
         public abstract void build( Gtk.Box box );
@@ -28,13 +26,10 @@ namespace Dashboard {
         int mqtt_port;
         string mqtt_user;
         string mqtt_pass;
-        string style_text;
-        Gtk.CssProvider style_provider;
 
         public class DashletBreak : Dashlet {
             public DashletBreak( Dashboard dashboard_in ) {
                 this.dashboard = dashboard_in;
-                this.style_provider = new Gtk.CssProvider();
             }
             public override void build( Gtk.Box box ) {
                 this.dashboard.x_iter += 1;
@@ -48,12 +43,20 @@ namespace Dashboard {
         public Dashboard() {
             this.dashlets = new List<Dashlet>();
             this.window = new Gtk.Window();
-            this.style_provider = new Gtk.CssProvider();
             this.x_iter = 0;
             this.y_iter = 1;
         }
 
         public void config( string config_path ) {
+
+            Gtk.CssProvider style = new Gtk.CssProvider();
+            style.load_from_path( "circuits.css" );
+            Gtk.StyleContext context = new Gtk.StyleContext();
+            context.add_provider_for_screen(
+                Gdk.Screen.get_default(),
+                style,
+                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION );
+
             Json.Parser parser = new Json.Parser();
             
             try {
@@ -65,7 +68,6 @@ namespace Dashboard {
                 int dash_w = (int)config_options.get_int_member( "width" );
                 int dash_h = (int)config_options.get_int_member( "height" );
                 var dash_decorated = config_options.get_boolean_member( "decorated" );
-                this.style_text = config_options.get_string_member( "style" );
                 if( !dash_decorated ) {
                     this.window.set_decorated( false );
                 }
@@ -96,7 +98,6 @@ namespace Dashboard {
                         dashlets.append( dashlet_out );
                         dashlet_out.config( dashlet_obj );
                         dashlet_out.title = dashlet_obj.get_string_member( "title" );
-                        dashlet_out.style_text = dashlet_obj.get_string_member( "style" );
                     }
                 }
         
@@ -110,15 +111,6 @@ namespace Dashboard {
             } catch( GLib.Error e ) {
                 stderr.printf( "JSON error: %s\n", e.message );
             }
-
-            // Try to style the dashboard window.
-            try {
-                stdout.printf( "window style: %s\n", this.style_text );
-                this.style_provider.load_from_data( this.style_text );
-                this.window.get_style_context().add_provider( this.style_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER );
-            } catch( GLib.Error e ) {
-                stderr.printf( "window style error: %s\n", e.message );
-            }
         }
 
         public void build() {
@@ -127,35 +119,24 @@ namespace Dashboard {
 
             grid.set_row_spacing( 3 );
 
-            // The style isn't applied to the first title, so this skips that.
-            var spacer = new Label( "" );
-            grid.attach( spacer, 0, 0, 1, 1 );
-            spacer.set_css_name( "dashlet-title" );
-            spacer.get_style_context().add_provider( this.style_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER );
-            spacer.set_alignment( 0, 0 );
-
             foreach( var dashlet in dashlets ) {
                 // Create dashlet title.
                 if( null != dashlet.title ) {
                     var label = new Label( dashlet.title );
                     grid.attach( label, this.x_iter, this.y_iter, 1, 1 );
                     this.y_iter++;
-                    label.set_css_name( "dashlet-title" );
-                    label.get_style_context().add_provider( this.style_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER );
+                    var context = label.get_style_context();
+                    context.add_class( "circuits-dashlet-title" );
                     label.set_alignment( 0, 0 );
                 }
 
                 // Draw dashlet using its individual drawing method.
-                try {
-                    dashlet.style_provider.load_from_data( dashlet.style_text );
-                } catch( GLib.Error e ) {
-                    stderr.printf( "dashlet style error: %s\n", e.message );
-                }
                 Gtk.Box box = new Gtk.Box( Gtk.Orientation.VERTICAL, 1 );
                 grid.attach( box, this.x_iter, this.y_iter, 1, 1 );
-                box.get_style_context().add_provider( dashlet.style_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER );
                 this.y_iter++;
                 dashlet.build( box );
+                var context = box.get_style_context();
+                context.add_class( "circuits-dashlet-box" );
             }
 
             this.window.add( grid );

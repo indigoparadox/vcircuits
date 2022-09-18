@@ -23,14 +23,14 @@ namespace Dashboard {
             this.dashboard = dashboard_in;
             this.inputs = new List<InputOutput>();
             this.outputs = new List<InputOutput>();
-            this.style_provider = new Gtk.CssProvider();
         }
 
         public override void build( Gtk.Box box ) {
             foreach( var output in this.outputs ) {
                 var output_lbl = new Gtk.Label( output.name );
+                var context = output_lbl.get_style_context();
+                context.add_class( "circuits-rest-output-title" );
                 box.add( output_lbl );
-                //output_lbl.set_css_name( "output-title" );
                 output_lbl.set_alignment( 0, 0 );
 
                 var input_grid = new Gtk.Grid();
@@ -44,8 +44,8 @@ namespace Dashboard {
 
                     var input_btn = new Gtk.Button();
                     input_btn.set_label( input.name );
-                    input_btn.set_css_name( "rest-input-button" );
-                    input_btn.get_style_context().add_provider( this.style_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER );
+                    context = input_btn.get_style_context();
+                    context.add_class( "circuits-rest-input-button" );
                     input_btn.clicked.connect( ( b ) => {
                         var click_url = this.url
                             .replace( "{input}", input.id.to_string() )
