@@ -6,8 +6,9 @@ using Json;
 namespace Dashboard {
     public class DashletZendesk : Dashlet {
         public string topic;
-        public ListBox listbox;
+        public Gtk.ListBox listbox;
         public string ticket_class;
+        private Gtk.Label updated_label;
 
         public DashletZendesk( Dashboard dashboard_in ) {
             this.dashboard = dashboard_in;
@@ -25,6 +26,12 @@ namespace Dashboard {
             try {
                 parser.load_from_data( msg, -1 );
                 var msg_root = parser.get_root().get_object();
+
+                int updated_unix = (int)msg_root.get_int_member( "updated" );
+                Time updated_time = Time.local( updated_unix );
+                stdout.printf( "updated at %s\n", updated_time.to_string() );
+                this.updated_label.set_text( updated_time.to_string() );
+
                 var msg_results = msg_root.get_array_member( "results" );
 
                 foreach( var ticket_iter in msg_results.get_elements() ) {
@@ -47,8 +54,14 @@ namespace Dashboard {
         }
 
         public override void build( Gtk.Box box ) {
+            this.updated_label = new Gtk.Label( "" );
+            this.updated_label.set_alignment( 0, 0 );
+            var context = this.updated_label.get_style_context();
+            context.add_class( "circuits-zendesk-updated" );
+            box.add( this.updated_label );
+
             this.listbox = new ListBox();
-            var context = listbox.get_style_context();
+            context = this.listbox.get_style_context();
             context.add_class( "circuits-zendesk-tickets" );
             context.add_class( this.ticket_class );
             box.add( this.listbox );

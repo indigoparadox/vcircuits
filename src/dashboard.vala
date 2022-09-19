@@ -50,9 +50,12 @@ namespace Dashboard {
         public void config( string config_path ) {
 
             Gtk.CssProvider style = new Gtk.CssProvider();
-            style.load_from_path( "circuits.css" );
-            Gtk.StyleContext context = new Gtk.StyleContext();
-            context.add_provider_for_screen(
+            try {
+                style.load_from_path( "circuits.css" );
+            } catch( GLib.Error e ) {
+                stderr.printf( "style error: %s\n", e.message );
+            }
+            Gtk.StyleContext.add_provider_for_screen(
                 Gdk.Screen.get_default(),
                 style,
                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION );
