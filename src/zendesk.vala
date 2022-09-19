@@ -37,12 +37,16 @@ namespace Dashboard {
                 foreach( var ticket_iter in msg_results.get_elements() ) {
                     // Get ticket properties.
                     var ticket_obj = ticket_iter.get_object();
-                    var ticket_subject = ticket_obj.get_string_member( "subject" );
-                    stdout.printf( "%s\n", ticket_subject );
+                    StringBuilder ticket_subject = new StringBuilder( "" );
+                    ticket_subject.printf(
+                        "[%d] %s",
+                        (int)ticket_obj.get_int_member( "id" ),
+                        ticket_obj.get_string_member( "subject" ) );
+                    stdout.printf( "found ticket: %s\n", ticket_subject.str );
 
                     // Add ticket to listbox.
                     // TODO: Limit subject length.
-                    var subject_lbl = new Label( ticket_subject );
+                    var subject_lbl = new Label( ticket_subject.str );
                     subject_lbl.set_alignment( 0, 0 );
                     this.listbox.add( subject_lbl );
                     this.listbox.show_all();
