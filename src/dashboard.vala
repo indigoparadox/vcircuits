@@ -17,6 +17,21 @@ namespace Dashboard {
     }
 
     public class Dashboard {
+
+        public class PasswordHolder {
+            public Secret.Schema schema;
+            public GLib.HashTable<string, string> attribs;
+            public string password;
+            public string label;
+
+            public PasswordHolder() {
+                this.schema = null;
+                this.attribs = new GLib.HashTable<string, string>( str_hash, str_equal );
+                this.password = null;
+                this.label = null;
+            }
+        }
+
         public List<Dashlet> dashlets;
         private int y_iter;
         private int x_iter;
@@ -26,7 +41,7 @@ namespace Dashboard {
         string mqtt_host;
         int mqtt_port;
         string mqtt_user;
-        string mqtt_pass;
+        private PasswordHolder mqtt_pass;
         bool mqtt_connected = false;
 
         public class DashletBreak : Dashlet {
@@ -119,59 +134,44 @@ namespace Dashboard {
             //this.mqtt_pass = config_mqtt.get_string_member( "pass" );
         }
 
-        public void config_mqtt_password( string host, int port, string user ) {
-            var mqtt_schema = new Secret.Schema(
-                "info.interfinitydynamics.circuits.mqtt", Secret.SchemaFlags.NONE,
-                "host", Secret.SchemaAttributeType.STRING,
-                "port", Secret.SchemaAttributeType.STRING,
-                "user", Secret.SchemaAttributeType.STRING
-            );
-
-            var mqtt_attribs = new GLib.HashTable<string, string>( str_hash, str_equal );
-            mqtt_attribs["host"] = host;
-            mqtt_attribs["port"] = port.to_string();
-            mqtt_attribs["user"] = user;
-
-            stdout.printf( "looking up mqtt pass %s, %s, %s\n",
-                mqtt_attribs["host"], mqtt_attribs["port"], mqtt_attribs["user"] );
-
+        public void config_password( PasswordHolder pass_out ) {
             Secret.password_lookupv.begin(
-                mqtt_schema, mqtt_attribs, null, ( obj, async_res ) => {
-                    this.mqtt_pass = Secret.password_lookup.end( async_res );
-                    if( null == this.mqtt_pass ) {
-                        // Build password entry dialog.
-                        var pass_window = new Gtk.Window();
-                        var pass_grid = new Gtk.Grid();
-
-                        var pass_txt = new Gtk.Entry();
-                        pass_grid.attach( pass_txt, 0, 0, 2, 1 );
-
-                        var ok_btn = new Gtk.Button();
-                        ok_btn.set_label( "&OK" );
-                        ok_btn.clicked.connect( ( b ) => {
-                            this.mqtt_pass = pass_txt.get_text();
-                            Secret.password_storev.begin(
-                                mqtt_schema, mqtt_attribs,
-                                Secret.COLLECTION_DEFAULT, 
-                                "%s:%d:%s".printf( this.mqtt_host, this.mqtt_port, this.mqtt_user ),
-                                this.mqtt_pass, null, ( obj, async_res ) => {
-                                    if( !Secret.password_store.end( async_res ) ) {
-                                        stderr.printf( "unable to store MQTT password!\n" );
-                                    }
-                                } );
-                            pass_window.destroy();
-                        } );
-                        pass_grid.attach( ok_btn, 0, 1, 1, 1 );
-
-                        var cancel_btn = new Gtk.Button();
-                        cancel_btn.set_label( "&Cancel" );
-                        pass_grid.attach( cancel_btn, 0, 2, 1, 1 );
-
-                        pass_window.add( pass_grid );
-                        pass_window.show_all();
-                    } else {
-                        //stdout.printf( "found pass: %s\n", this.mqtt_pass );
+                pass_out.schema, pass_out.attribs, null,
+                ( obj, async_res ) => {
+                    pass_out.password = Secret.password_lookup.end( async_res );
+                    if( null != pass_out.password ) {
+                        return;
                     }
+
+                    // Build password entry dialog.
+                    var pass_window = new Gtk.Window();
+                    var pass_grid = new Gtk.Grid();
+
+                    var pass_txt = new Gtk.Entry();
+                    pass_grid.attach( pass_txt, 0, 0, 2, 1 );
+
+                    var ok_btn = new Gtk.Button();
+                    ok_btn.set_label( "&OK" );
+                    ok_btn.clicked.connect( ( b ) => {
+                        pass_out.password = pass_txt.get_text();
+                        Secret.password_storev.begin(
+                            pass_out.schema, pass_out.attribs, Secret.COLLECTION_DEFAULT,
+                            pass_out.label, pass_out.password, null,
+                            ( obj, async_res ) => {
+                                if( !Secret.password_store.end( async_res ) ) {
+                                    stderr.printf( "unable to store password!\n" );
+                                }
+                            } );
+                        pass_window.destroy();
+                    } );
+                    pass_grid.attach( ok_btn, 0, 1, 1, 1 );
+
+                    var cancel_btn = new Gtk.Button();
+                    cancel_btn.set_label( "&Cancel" );
+                    pass_grid.attach( cancel_btn, 0, 2, 1, 1 );
+
+                    pass_window.add( pass_grid );
+                    pass_window.show_all();
                 }
             );
         }
@@ -213,7 +213,21 @@ namespace Dashboard {
             this.m = new Client( "circ_test_123", true, null );
             this.m.connect_callback_set( on_connect );
             this.m.message_callback_set( on_message_tickets );
-            this.config_mqtt_password( this.mqtt_host, this.mqtt_port, this.mqtt_user );
+
+            // Get credentials and start the connection process.
+            this.mqtt_pass = new PasswordHolder();
+            this.mqtt_pass.schema = new Secret.Schema(
+                "info.interfinitydynamics.circuits.mqtt", Secret.SchemaFlags.NONE,
+                "host", Secret.SchemaAttributeType.STRING,
+                "port", Secret.SchemaAttributeType.STRING,
+                "user", Secret.SchemaAttributeType.STRING
+            );
+            this.mqtt_pass.attribs["host"] = this.mqtt_host;
+            this.mqtt_pass.attribs["port"] = this.mqtt_port.to_string();
+            this.mqtt_pass.attribs["user"] = this.mqtt_user;
+            this.mqtt_pass.label = "%s:%d:%s".printf( this.mqtt_host, this.mqtt_port, this.mqtt_user );
+
+            this.config_password( this.mqtt_pass );
 
             // Update Mosquitto every couple seconds. 
             GLib.Timeout.add( 2000, () => {
@@ -224,7 +238,7 @@ namespace Dashboard {
 
                 // Connection failure or not connected!
                 stderr.printf( "MQTT connection failed!\n" );
-                if( null == this.mqtt_user || null != this.mqtt_pass ) {
+                if( null == this.mqtt_user || null != this.mqtt_pass.password ) {
                     stdout.printf( "MQTT reconnecting (%s, %s, %d)...\n",
                         this.mqtt_user, this.mqtt_host, this.mqtt_port );
                     if( this.mqtt_connected ) {
@@ -232,7 +246,7 @@ namespace Dashboard {
                         this.m.reconnect();
                     } else {
                         // First time connection.
-                        this.m.username_pw_set( this.mqtt_user, this.mqtt_pass );
+                        this.m.username_pw_set( this.mqtt_user, this.mqtt_pass.password );
                         this.m.connect( this.mqtt_host, (int)this.mqtt_port, 60 );
                     }
                 }
