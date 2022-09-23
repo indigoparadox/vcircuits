@@ -1,0 +1,34 @@
+* { 
+    background: black;
+    color: white;
+}
+
+.circuits-dashlet-title {
+    color: cyan;
+    font-size: 1.1em;
+    text-decoration: underline;
+    font-weight: 700;
+    padding: 5px;
+}
+
+.circuits-dashlet-box {
+    padding: 5px;
+}
+
+.circuits-zendesk-tickets-new * {
+    color: yellow;
+}
+
+.circuits-zendesk-tickets-open * {
+    color: red;
+}
+
+.circuits-rest-input-button {
+    padding: 2px;
+    border: none;
+}
+
+.circuits-rest-input-button * {
+    color: orange;
+    text-decoration: underline;
+}
