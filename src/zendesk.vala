@@ -29,7 +29,7 @@ namespace Dashboard {
 
                 int updated_unix = (int)msg_root.get_int_member( "updated" );
                 Time updated_time = Time.local( updated_unix );
-                stdout.printf( "updated at %s\n", updated_time.to_string() );
+                debug( "updated at %s", updated_time.to_string() );
                 this.updated_label.set_text( updated_time.to_string() );
 
                 var msg_results = msg_root.get_array_member( "results" );
@@ -42,7 +42,7 @@ namespace Dashboard {
                         "[%d] %s",
                         (int)ticket_obj.get_int_member( "id" ),
                         ticket_obj.get_string_member( "subject" ) );
-                    stdout.printf( "found ticket: %s\n", ticket_subject.str );
+                    debug( "found ticket: %s", ticket_subject.str );
 
                     // Add ticket to listbox.
                     // TODO: Limit subject length.
@@ -53,7 +53,7 @@ namespace Dashboard {
                 }
 
             } catch( GLib.Error e ) {
-                stderr.printf( "JSON error: %s\n", e.message );
+                critical( "JSON error: %s", e.message );
             }
         }
 
@@ -73,12 +73,12 @@ namespace Dashboard {
 
         public override void config( Json.Object config_obj ) {
             this.topic = config_obj.get_string_member( "topic" );
-            stdout.printf( "topic: %s\n", this.topic );
+            debug( "topic: %s", this.topic );
             this.ticket_class = config_obj.get_string_member( "ticketclass" );
         }
 
         public override void mqtt_connect( Mosquitto.Client m ) {
-            stdout.printf( "subscribing to: %s\n", this.topic );
+            debug( "subscribing to: %s", this.topic );
             m.subscribe( 0, this.topic, 0 );
         }
 

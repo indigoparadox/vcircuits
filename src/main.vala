@@ -13,7 +13,7 @@ public void on_message_tickets( Mosquitto.Client m, void* data, Mosquitto.Messag
 }
 
 public void on_connect( Mosquitto.Client m, void* data, int res ) {
-    stdout.printf( "connected\n" );
+    info( "MQTT connected" );
     foreach( var dashlet in dashboard.dashlets ) {
         dashlet.mqtt_connect( m );
     }

@@ -36,7 +36,7 @@ namespace Dashboard {
                     try {
                         this.password = Secret.password_lookup.end( async_res );
                     } catch( GLib.Error e ) {
-                        stderr.printf( "unable to retrieve password %s: %s\n",
+                        warning( "unable to retrieve password %s: %s",
                             this.label, e.message );
                     }
                     if( null != this.password ) {
@@ -64,10 +64,10 @@ namespace Dashboard {
                             ( obj, async_res ) => {
                                 try {
                                     if( !Secret.password_store.end( async_res ) ) {
-                                        stderr.printf( "unable to store password!\n" );
+                                        critical( "unable to store password!" );
                                     }
                                 } catch( GLib.Error e ) {
-                                    stderr.printf( "unable to store password %s: %s\n",
+                                    critical( "unable to store password %s: %s",
                                         this.label, e.message );
                                 }
                             } );
@@ -130,7 +130,7 @@ namespace Dashboard {
             try {
                 style.load_from_path( "circuits.css" );
             } catch( GLib.Error e ) {
-                stderr.printf( "style error: %s\n", e.message );
+                critical( "style error: %s", e.message );
             }
             Gtk.StyleContext.add_provider_for_screen(
                 Gdk.Screen.get_default(),
@@ -159,7 +159,7 @@ namespace Dashboard {
                     var dashlet_obj = dashlet_iter.get_object();
                     Dashlet dashlet_out = null;
         
-                    stdout.printf( "dashlet: %s\n", dashlet_obj.get_string_member( "type" ) );
+                    debug( "dashlet: %s", dashlet_obj.get_string_member( "type" ) );
                     switch( dashlet_obj.get_string_member( "type" ) ) {
                     case "zendesk":
                         dashlet_out = new DashletZendesk( this );
@@ -188,7 +188,7 @@ namespace Dashboard {
                 this.mqtt_port = (int)config_mqtt.get_int_member( "port" );
                 this.mqtt_user = config_mqtt.get_string_member( "user" );
             } catch( GLib.Error e ) {
-                stderr.printf( "JSON error: %s\n", e.message );
+                critical( "JSON error: %s", e.message );
             }
 
             //this.mqtt_pass = config_mqtt.get_string_member( "pass" );
@@ -255,9 +255,9 @@ namespace Dashboard {
                 }
 
                 // Connection failure or not connected!
-                stderr.printf( "MQTT connection failed!\n" );
+                warning( "MQTT connection failed!" );
                 if( null == this.mqtt_user || null != this.mqtt_pass.password ) {
-                    stdout.printf( "MQTT reconnecting (%s, %s, %d)...\n",
+                    info( "MQTT reconnecting (%s, %s, %d)...",
                         this.mqtt_user, this.mqtt_host, this.mqtt_port );
                     if( this.mqtt_connected ) {
                         // Reconnecting after failure. Params already in place.

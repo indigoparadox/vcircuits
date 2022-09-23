@@ -73,6 +73,8 @@ namespace Dashboard {
 
                         var handle = new EasyHandle();
                         handle.setopt( Option.URL, click_url );
+                        handle.setopt( Option.VERBOSE, 0 );
+                        handle.setopt( Option.STDERR, 0 );
                         if( null != this.user ) {
                             handle.setopt( Option.USERPWD, "%s:%s".printf( this.user, this.password.password ) );
                         }
@@ -102,7 +104,7 @@ namespace Dashboard {
 
         public override void config( Json.Object config_obj ) {
             this.url = config_obj.get_string_member( "url" );
-            stdout.printf( "REST url: %s\n", this.url );
+            debug( "REST url: %s\n", this.url );
 
             this.columns = (int)config_obj.get_int_member( "columns" );
 
@@ -125,7 +127,7 @@ namespace Dashboard {
             }
 
             this.user = config_obj.get_string_member( "user" );
-            stdout.printf( "REST user: %s\n", this.user );
+            debug( "REST user: %s", this.user );
         }
     }
 }
