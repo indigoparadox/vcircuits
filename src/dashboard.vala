@@ -16,21 +16,73 @@ namespace Dashboard {
         public abstract void config( Json.Object config_obj );
     }
 
-    public class Dashboard {
+    public class PasswordHolder {
+        public Secret.Schema schema;
+        public GLib.HashTable<string, string> attribs;
+        public string password;
+        public string label;
 
-        public class PasswordHolder {
-            public Secret.Schema schema;
-            public GLib.HashTable<string, string> attribs;
-            public string password;
-            public string label;
-
-            public PasswordHolder() {
-                this.schema = null;
-                this.attribs = new GLib.HashTable<string, string>( str_hash, str_equal );
-                this.password = null;
-                this.label = null;
-            }
+        public PasswordHolder() {
+            this.schema = null;
+            this.attribs = new GLib.HashTable<string, string>( str_hash, str_equal );
+            this.password = null;
+            this.label = null;
         }
+
+        public void config_password() {
+            Secret.password_lookupv.begin(
+                this.schema, this.attribs, null,
+                ( obj, async_res ) => {
+                    try {
+                        this.password = Secret.password_lookup.end( async_res );
+                    } catch( GLib.Error e ) {
+                        stderr.printf( "unable to retrieve password %s: %s\n",
+                            this.label, e.message );
+                    }
+                    if( null != this.password ) {
+                        return;
+                    }
+
+                    // Build password entry dialog.
+                    var pass_window = new Gtk.Window();
+                    var pass_grid = new Gtk.Grid();
+
+                    var pass_txt = new Gtk.Entry();
+                    pass_grid.attach( pass_txt, 0, 0, 2, 1 );
+
+                    var ok_btn = new Gtk.Button();
+                    ok_btn.set_label( "&OK" );
+                    ok_btn.clicked.connect( ( b ) => {
+                        this.password = pass_txt.get_text();
+                        Secret.password_storev.begin(
+                            this.schema, this.attribs, Secret.COLLECTION_DEFAULT,
+                            this.label, this.password, null,
+                            ( obj, async_res ) => {
+                                try {
+                                    if( !Secret.password_store.end( async_res ) ) {
+                                        stderr.printf( "unable to store password!\n" );
+                                    }
+                                } catch( GLib.Error e ) {
+                                    stderr.printf( "unable to store password %s: %s\n",
+                                        this.label, e.message );
+                                }
+                            } );
+                        pass_window.destroy();
+                    } );
+                    pass_grid.attach( ok_btn, 0, 1, 1, 1 );
+
+                    var cancel_btn = new Gtk.Button();
+                    cancel_btn.set_label( "&Cancel" );
+                    pass_grid.attach( cancel_btn, 0, 2, 1, 1 );
+
+                    pass_window.add( pass_grid );
+                    pass_window.show_all();
+                }
+            );
+        }
+    }
+
+    public class Dashboard {
 
         public List<Dashlet> dashlets;
         private int y_iter;
@@ -134,48 +186,6 @@ namespace Dashboard {
             //this.mqtt_pass = config_mqtt.get_string_member( "pass" );
         }
 
-        public void config_password( PasswordHolder pass_out ) {
-            Secret.password_lookupv.begin(
-                pass_out.schema, pass_out.attribs, null,
-                ( obj, async_res ) => {
-                    pass_out.password = Secret.password_lookup.end( async_res );
-                    if( null != pass_out.password ) {
-                        return;
-                    }
-
-                    // Build password entry dialog.
-                    var pass_window = new Gtk.Window();
-                    var pass_grid = new Gtk.Grid();
-
-                    var pass_txt = new Gtk.Entry();
-                    pass_grid.attach( pass_txt, 0, 0, 2, 1 );
-
-                    var ok_btn = new Gtk.Button();
-                    ok_btn.set_label( "&OK" );
-                    ok_btn.clicked.connect( ( b ) => {
-                        pass_out.password = pass_txt.get_text();
-                        Secret.password_storev.begin(
-                            pass_out.schema, pass_out.attribs, Secret.COLLECTION_DEFAULT,
-                            pass_out.label, pass_out.password, null,
-                            ( obj, async_res ) => {
-                                if( !Secret.password_store.end( async_res ) ) {
-                                    stderr.printf( "unable to store password!\n" );
-                                }
-                            } );
-                        pass_window.destroy();
-                    } );
-                    pass_grid.attach( ok_btn, 0, 1, 1, 1 );
-
-                    var cancel_btn = new Gtk.Button();
-                    cancel_btn.set_label( "&Cancel" );
-                    pass_grid.attach( cancel_btn, 0, 2, 1, 1 );
-
-                    pass_window.add( pass_grid );
-                    pass_window.show_all();
-                }
-            );
-        }
-
         public void build() {
             // Window setup.
             var grid = new Grid();
@@ -227,7 +237,7 @@ namespace Dashboard {
             this.mqtt_pass.attribs["user"] = this.mqtt_user;
             this.mqtt_pass.label = "%s:%d:%s".printf( this.mqtt_host, this.mqtt_port, this.mqtt_user );
 
-            this.config_password( this.mqtt_pass );
+            this.mqtt_pass.config_password();
 
             // Update Mosquitto every couple seconds. 
             GLib.Timeout.add( 2000, () => {
