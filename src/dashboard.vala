@@ -29,7 +29,7 @@ namespace Dashboard {
             this.label = null;
         }
 
-        public void config_password() {
+        public void config_password( string title ) {
             Secret.password_lookupv.begin(
                 this.schema, this.attribs, null,
                 ( obj, async_res ) => {
@@ -46,12 +46,16 @@ namespace Dashboard {
                     // Build password entry dialog.
                     var pass_window = new Gtk.Window();
                     var pass_grid = new Gtk.Grid();
+                    pass_grid.set_row_spacing( 10 );
+
+                    var pass_lbl = new Gtk.Label( "Please enter the password for %s:".printf( title ) );
+                    pass_grid.attach( pass_lbl, 0, 0, 4, 1 );
 
                     var pass_txt = new Gtk.Entry();
-                    pass_grid.attach( pass_txt, 0, 0, 2, 1 );
+                    pass_grid.attach( pass_txt, 0, 1, 4, 1 );
 
                     var ok_btn = new Gtk.Button();
-                    ok_btn.set_label( "&OK" );
+                    ok_btn.set_label( "OK" );
                     ok_btn.clicked.connect( ( b ) => {
                         this.password = pass_txt.get_text();
                         Secret.password_storev.begin(
@@ -69,12 +73,16 @@ namespace Dashboard {
                             } );
                         pass_window.destroy();
                     } );
-                    pass_grid.attach( ok_btn, 0, 1, 1, 1 );
+                    pass_grid.attach( ok_btn, 1, 2, 1, 1 );
 
                     var cancel_btn = new Gtk.Button();
-                    cancel_btn.set_label( "&Cancel" );
-                    pass_grid.attach( cancel_btn, 0, 2, 1, 1 );
+                    cancel_btn.set_label( "Cancel" );
+                    cancel_btn.clicked.connect( ( b ) => {
+                        pass_window.destroy();
+                    } );
+                    pass_grid.attach( cancel_btn, 2, 2, 1, 1 );
 
+                    pass_window.set_title( title );
                     pass_window.add( pass_grid );
                     pass_window.show_all();
                 }
@@ -237,7 +245,7 @@ namespace Dashboard {
             this.mqtt_pass.attribs["user"] = this.mqtt_user;
             this.mqtt_pass.label = "%s:%d:%s".printf( this.mqtt_host, this.mqtt_port, this.mqtt_user );
 
-            this.mqtt_pass.config_password();
+            this.mqtt_pass.config_password( "MQTT Server" );
 
             // Update Mosquitto every couple seconds. 
             GLib.Timeout.add( 2000, () => {
