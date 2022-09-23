@@ -3,7 +3,13 @@
 
 BINDIR := bin
 OBJDIR := obj
-PACKAGES := --vapidir src --pkg libmosquitto --pkg gtk+-3.0 --pkg json-glib-1.0 --pkg posix --pkg libcurl
+PACKAGES := --vapidir src \
+	--pkg libmosquitto \
+	--pkg gtk+-3.0 \
+	--pkg json-glib-1.0 \
+	--pkg posix \
+	--pkg libcurl \
+	--pkg libsecret-1
 
 OBJECTS := \
 	src/dashboard.vala \
