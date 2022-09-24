@@ -13,7 +13,11 @@ namespace Dashboard {
             this.dashboard = dashboard_in;
         }
 
-        private void parse_tickets( string msg ) {
+        private void parse_tickets( string topic, string msg ) {
+            
+            if( this.topic != topic ) {
+                return;
+            }
 
             var parser = new Json.Parser();
 
@@ -83,14 +87,7 @@ namespace Dashboard {
                     return;
                 }
 
-                v.messaged.connect( ( topic, message ) => {
-                    // TODO: Implement topic filter at a lower level.
-                    if( this.topic != topic ) {
-                        return;
-                    }
-        
-                    this.parse_tickets( message );
-                } );
+                v.messaged.connect( this.parse_tickets );
             } );
         }
     }
