@@ -1,8 +1,6 @@
 
-using Mosquitto;
 using Gtk;
 using Json;
-using Secret;
 using DashSource;
 
 namespace Dashboard {
