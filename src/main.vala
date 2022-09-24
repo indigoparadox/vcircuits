@@ -15,7 +15,7 @@ public static int main( string[] args ) {
 
     dashboard.config( "circuits.json" );
 
-    dashboard.connect();
+    dashboard.connect_sources();
 
     dashboard.build();
 
