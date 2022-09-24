@@ -4,7 +4,7 @@ using Gtk;
 using Json;
 
 namespace Dashboard {
-    public class DashletZendesk : Dashlet {
+    public class DashletZendesk : Dashboard.Dashlet {
         public string topic;
         public Gtk.ListBox listbox;
         public string ticket_class;

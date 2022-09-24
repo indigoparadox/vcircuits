@@ -7,7 +7,7 @@ using Secret;
 
 namespace Dashboard {
 
-    public class DashletREST : Dashlet {
+    public class DashletREST : Dashboard.Dashlet {
 
         private class InputOutput {
             public string name;
