@@ -95,7 +95,7 @@ namespace Dashboard {
 
         public override void config( Json.Object config_obj ) {
             this.url = config_obj.get_string_member( "url" );
-            debug( "REST url: %s\n", this.url );
+            debug( "REST url: %s", this.url );
 
             this.columns = (int)config_obj.get_int_member( "columns" );
 
