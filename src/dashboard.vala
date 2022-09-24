@@ -26,11 +26,11 @@ namespace Dashboard {
         }
         public List<Dashlet> dashlets;
         public HashTable<string, DashSource.DashSource> sources;
-        private int y_iter;
-        private int x_iter;
         
         private Gtk.Window window;
-        private Gtk.Grid grid;
+        
+        protected Gtk.Box rows;
+        protected Gtk.Box current_column;
 
         public class DashletBreak : Dashlet {
             public DashletBreak( Dashboard dashboard_in ) {
@@ -38,8 +38,8 @@ namespace Dashboard {
                 this.topic = null;
             }
             public override void build( Gtk.Box box ) {
-                this.dashboard.x_iter += 1;
-                this.dashboard.y_iter = 1;
+                this.dashboard.current_column = new Gtk.Box( Gtk.Orientation.VERTICAL, 1 );
+                this.dashboard.rows.add( this.dashboard.current_column );
             }
             public override void config( Json.Object config_obj ) {}
         }
@@ -48,8 +48,6 @@ namespace Dashboard {
             this.dashlets = new List<Dashlet>();
             this.sources = new HashTable<string, DashSource.DashSource>( str_hash, str_equal );
             this.window = new Gtk.Window();
-            this.x_iter = 0;
-            this.y_iter = 1;
         }
 
         public void config( string config_path ) {
@@ -163,8 +161,7 @@ namespace Dashboard {
 
         public void build_title( Dashboard.Dashlet child ) {
             var label = new Label( child.title );
-            this.grid.attach( label, this.x_iter, this.y_iter, 1, 1 );
-            this.y_iter++;
+            this.current_column.add( label );
             var context = label.get_style_context();
             context.add_class( "circuits-dashlet-title" );
             label.set_halign( Gtk.Align.START );
@@ -174,8 +171,7 @@ namespace Dashboard {
             // Draw dashlet using its individual drawing method.
             debug( "building box for: %s", child.title );
             Gtk.Box box = new Gtk.Box( Gtk.Orientation.VERTICAL, 1 );
-            this.grid.attach( box, this.x_iter, this.y_iter, 1, 1 );
-            this.y_iter++;
+            this.current_column.add( box );
             child.build( box );
             var context = box.get_style_context();
             context.add_class( "circuits-dashlet-box" );
@@ -183,9 +179,9 @@ namespace Dashboard {
 
         public void build() {
             // Window setup.
-            this.grid = new Grid();
-
-            this.grid.set_row_spacing( 3 );
+            this.rows = new Gtk.Box( Gtk.Orientation.HORIZONTAL, 1 );
+            this.current_column = new Gtk.Box( Gtk.Orientation.VERTICAL, 1 );
+            this.rows.add( this.current_column );
 
             foreach( var dashlet in dashlets ) {
                 // Create dashlet title.
@@ -196,7 +192,7 @@ namespace Dashboard {
                 dashlet.builder.build_in_box( dashlet );
             }
 
-            this.window.add( this.grid );
+            this.window.add( this.rows );
             this.window.destroy.connect( Gtk.main_quit );
             this.window.show_all();
         }
