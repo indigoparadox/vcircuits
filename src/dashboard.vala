@@ -99,6 +99,10 @@ namespace Dashboard {
                 case "mqtt":
                     source_out = new DashSourceMQTT( this, source_key );
                     break;
+            
+                case "imap":
+                    source_out = new DashSourceIMAP( this, source_key );
+                    break;
                 }
     
                 if( null != source_out ) {
@@ -139,6 +143,7 @@ namespace Dashboard {
             }
 
             if( null != dashlet_out ) {
+                debug( "adding dashlet to dashboard..." );
                 dashlet_out.builder = this;
                 dashlet_out.title = dashlet_obj.get_string_member( "title" );
                 dashlets.append( dashlet_out );
@@ -153,7 +158,8 @@ namespace Dashboard {
         public void connect_sources() {
             // Instruct all loaded sources to connect to their remote servers.
             this.sources.foreach( ( k, v ) => {
-                v.connect();
+                debug( "connecting source: %s", k );
+                v.connect_source();
             } );
         }
 

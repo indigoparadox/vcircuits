@@ -8,6 +8,6 @@ namespace DashSource {
         public signal void messaged( string topic, string message );
         
         public abstract void config( Json.Object config_obj );
-        public abstract void connect();
+        public abstract void connect_source();
     }
 }

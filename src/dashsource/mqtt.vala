@@ -32,7 +32,7 @@ namespace DashSource {
                 this.mqtt_user, this.mqtt_host, this.mqtt_port );
         }
 
-        public override void connect() {
+        public override void connect_source() {
             
             debug( "connecting MQTT: %s@%s:%d",
                 this.mqtt_user, this.mqtt_host, this.mqtt_port );
@@ -51,8 +51,8 @@ namespace DashSource {
             } );
             this.m.message_callback_set( ( m, data, msg ) => {
                 DashSourceMQTT mqtt = (DashSourceMQTT)data;
-                debug( "%s message received on topic %s: %s",
-                    mqtt.source, msg.topic, msg.payload );
+                //debug( "%s message received on topic %s: %s",
+                //    mqtt.source, msg.topic, msg.payload );
                 mqtt.messaged( msg.topic, msg.payload );
             } );
 
