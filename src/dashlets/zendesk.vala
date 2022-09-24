@@ -5,7 +5,6 @@ using Json;
 
 namespace Dashboard {
     public class DashletZendesk : Dashboard.Dashlet {
-        public string topic;
         public Gtk.ListBox listbox;
         public string ticket_class;
         private Gtk.Label updated_label;
@@ -75,20 +74,24 @@ namespace Dashboard {
             this.topic = config_obj.get_string_member( "topic" );
             debug( "topic: %s", this.topic );
             this.ticket_class = config_obj.get_string_member( "ticketclass" );
-        }
 
-        public override void mqtt_connect( Mosquitto.Client m ) {
-            debug( "subscribing to: %s", this.topic );
-            m.subscribe( 0, this.topic, 0 );
-        }
+            this.source = config_obj.get_string_member( "source" );
 
-        public override void mqtt_message( Mosquitto.Client m, Mosquitto.Message msg ) {
+            this.dashboard.sources.foreach( ( k, v ) => {
+                // Skip non-subscribed sources.
+                if( k != this.source ) {
+                    return;
+                }
 
-            if( this.topic != msg.topic ) {
-                return;
-            }
-
-            this.parse_tickets( msg.payload );
+                v.messaged.connect( ( topic, message ) => {
+                    // TODO: Implement topic filter at a lower level.
+                    if( this.topic != topic ) {
+                        return;
+                    }
+        
+                    this.parse_tickets( message );
+                } );
+            } );
         }
     }
 }

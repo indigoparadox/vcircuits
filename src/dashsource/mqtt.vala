@@ -12,25 +12,19 @@ namespace DashSource {
         string mqtt_host;
         int mqtt_port;
         string mqtt_user;
+        string mqtt_uid;
         private Dashboard.PasswordHolder mqtt_pass;
         bool mqtt_connected = false;
         public Mosquitto.Client m;
 
-        public static void on_message_tickets( Mosquitto.Client m, void* data, Mosquitto.Message msg ) {
-            foreach( var dashlet in dashboard.dashlets ) {
-                dashlet.mqtt_message( m, msg );
-            }
-        }
-
-        public static void on_connect( Mosquitto.Client m, void* data, int res ) {
-            info( "MQTT connected" );
-            foreach( var dashlet in dashboard.dashlets ) {
-                dashlet.mqtt_connect( m );
-            }
+        public DashSourceMQTT( Dashboard.Dashboard dashboard_in, string source_in ) {
+            this.dashboard = dashboard_in;
+            this.source = source_in;
         }
 
         public override void config( Json.Object config_obj ) {
             // Parse MQTT config.
+            this.mqtt_uid = config_obj.get_string_member( "uid" );
             this.mqtt_host = config_obj.get_string_member( "host" );
             this.mqtt_port = (int)config_obj.get_int_member( "port" );
             this.mqtt_user = config_obj.get_string_member( "user" );
@@ -44,10 +38,23 @@ namespace DashSource {
                 this.mqtt_user, this.mqtt_host, this.mqtt_port );
 
             // Mosquitto setup.
-            // TODO: Set client UID from config.
-            this.m = new Client( "circ_test_123", true, null );
-            this.m.connect_callback_set( DashSourceMQTT.on_connect );
-            this.m.message_callback_set( DashSourceMQTT.on_message_tickets );
+            this.m = new Client( this.mqtt_uid, true, null );
+            this.m.user_data_set( this );
+            this.m.connect_callback_set( ( m, data, res ) => {
+                DashSourceMQTT mqtt = (DashSourceMQTT)data;
+                debug( "%s connected", mqtt.source );
+                foreach( var dashlet in mqtt.dashboard.dashlets ) {
+                    if( dashlet.source == mqtt.source ) {
+                        mqtt.m.subscribe( 0, dashlet.topic, 0 );
+                    }
+                }
+            } );
+            this.m.message_callback_set( ( m, data, msg ) => {
+                DashSourceMQTT mqtt = (DashSourceMQTT)data;
+                debug( "%s message received on topic %s: %s",
+                    mqtt.source, msg.topic, msg.payload );
+                mqtt.messaged( msg.topic, msg.payload );
+            } );
 
             // Get credentials and start the connection process.
             this.mqtt_pass = new PasswordHolder();

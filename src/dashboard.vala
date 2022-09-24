@@ -10,12 +10,12 @@ namespace Dashboard {
     public class Dashboard {
 
         public abstract class Dashlet {
-            public string title;
+            public string title = null;
             public Dashboard dashboard;
+            public string topic = null;
+            public string source = null;
     
             public abstract void build( Gtk.Box box );
-            public abstract void mqtt_connect( Mosquitto.Client m );
-            public abstract void mqtt_message( Mosquitto.Client m, Mosquitto.Message msg );
             public abstract void config( Json.Object config_obj );
         }
 
@@ -29,13 +29,12 @@ namespace Dashboard {
         public class DashletBreak : Dashlet {
             public DashletBreak( Dashboard dashboard_in ) {
                 this.dashboard = dashboard_in;
+                this.topic = null;
             }
             public override void build( Gtk.Box box ) {
                 this.dashboard.x_iter += 1;
                 this.dashboard.y_iter = 1;
             }
-            public override void mqtt_connect( Mosquitto.Client m ) {}
-            public override void mqtt_message( Mosquitto.Client m, Mosquitto.Message msg ) {}
             public override void config( Json.Object config_obj ) {}
         }
 
@@ -63,6 +62,9 @@ namespace Dashboard {
             Json.Parser parser = new Json.Parser();
             
             try {
+                // TODO: Break up this try so a single source or dashlet can't
+                //       block all subsequent configs.
+
                 parser.load_from_file( config_path );
                 var config_root = parser.get_root().get_object();
         
@@ -75,6 +77,26 @@ namespace Dashboard {
                     this.window.set_decorated( false );
                 }
                 this.window.set_default_size( dash_w, dash_h );
+
+                // Parse sources config first so dashlets can reference them.
+                var config_sources = config_root.get_object_member( "sources" );
+                foreach( var source_key in config_sources.get_members() ) {
+                    var source_obj = config_sources.get_object_member( source_key );
+                    DashSource.DashSource source_out = null;
+        
+                    debug( "source: %s", source_obj.get_string_member( "type" ) );
+                    switch( source_obj.get_string_member( "type" ) ) {
+                    case "mqtt":
+                        source_out = new DashSourceMQTT( this, source_key );
+                        break;
+                    }
+        
+                    if( null != source_out ) {
+                        // Source was successfully loaded.
+                        source_out.config( source_obj );
+                        this.sources[source_key] = source_out;
+                    }
+                }
                
                 // Parse Dashlet config.
                 var config_dashboard = config_root.get_array_member( "dashboard" );
@@ -98,39 +120,19 @@ namespace Dashboard {
                     }
         
                     if( null != dashlet_out ) {
-                        dashlets.append( dashlet_out );
                         dashlet_out.config( dashlet_obj );
                         dashlet_out.title = dashlet_obj.get_string_member( "title" );
-                    }
-                }
-
-                // Parse sources config.
-                var config_sources = config_root.get_object_member( "sources" );
-                foreach( var source_key in config_sources.get_members() ) {
-                    var source_obj = config_sources.get_object_member( source_key );
-                    DashSource.DashSource source_out = null;
-        
-                    debug( "source: %s", source_obj.get_string_member( "type" ) );
-                    switch( source_obj.get_string_member( "type" ) ) {
-                    case "mqtt":
-                        source_out = new DashSourceMQTT();
-                        break;
-                    }
-        
-                    if( null != source_out ) {
-                        this.sources[source_key] = source_out;
-                        source_out.config( source_obj );
+                        dashlets.append( dashlet_out );
                     }
                 }
         
             } catch( GLib.Error e ) {
                 critical( "JSON error: %s", e.message );
             }
-
-            //this.mqtt_pass = config_mqtt.get_string_member( "pass" );
         }
 
         public void connect() {
+            // Instruct all loaded sources to connect to their remote servers.
             this.sources.foreach( ( k, v ) => {
                 v.connect();
             } );

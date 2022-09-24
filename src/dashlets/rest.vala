@@ -94,14 +94,6 @@ namespace Dashboard {
             }
         }
 
-        public override void mqtt_connect( Mosquitto.Client m ) {
-
-        }
-
-        public override void mqtt_message( Mosquitto.Client m, Mosquitto.Message msg ) {
-
-        }
-
         public override void config( Json.Object config_obj ) {
             this.url = config_obj.get_string_member( "url" );
             debug( "REST url: %s\n", this.url );
