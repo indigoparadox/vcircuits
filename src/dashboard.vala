@@ -93,6 +93,10 @@ namespace Dashboard {
             foreach( var source_key in config_sources.get_members() ) {
                 var source_obj = config_sources.get_object_member( source_key );
                 DashSource.DashSource source_out = null;
+
+                if( !source_obj.get_boolean_member( "enabled" ) ) {
+                    continue;
+                }
     
                 debug( "source: %s", source_obj.get_string_member( "type" ) );
                 switch( source_obj.get_string_member( "type" ) ) {
@@ -100,9 +104,9 @@ namespace Dashboard {
                     source_out = new DashSourceMQTT( this, source_key );
                     break;
             
-                case "imap":
+                /* case "imap":
                     source_out = new DashSourceIMAP( this, source_key );
-                    break;
+                    break; */
                 }
     
                 if( null != source_out ) {
