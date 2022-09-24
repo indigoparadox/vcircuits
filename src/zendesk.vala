@@ -47,7 +47,7 @@ namespace Dashboard {
                     // Add ticket to listbox.
                     // TODO: Limit subject length.
                     var subject_lbl = new Label( ticket_subject.str );
-                    subject_lbl.set_alignment( 0, 0 );
+                    subject_lbl.set_halign( Gtk.Align.START );
                     this.listbox.add( subject_lbl );
                     this.listbox.show_all();
                 }
@@ -59,7 +59,7 @@ namespace Dashboard {
 
         public override void build( Gtk.Box box ) {
             this.updated_label = new Gtk.Label( "" );
-            this.updated_label.set_alignment( 0, 0 );
+            this.updated_label.set_halign( Gtk.Align.START );
             var context = this.updated_label.get_style_context();
             context.add_class( "circuits-zendesk-updated" );
             box.add( this.updated_label );

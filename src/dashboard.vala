@@ -208,7 +208,7 @@ namespace Dashboard {
                     this.y_iter++;
                     var context = label.get_style_context();
                     context.add_class( "circuits-dashlet-title" );
-                    label.set_alignment( 0, 0 );
+                    label.set_halign( Gtk.Align.START );
                 }
 
                 // Draw dashlet using its individual drawing method.

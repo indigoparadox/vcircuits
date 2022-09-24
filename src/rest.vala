@@ -50,7 +50,7 @@ namespace Dashboard {
                 var context = output_lbl.get_style_context();
                 context.add_class( "circuits-rest-output-title" );
                 box.add( output_lbl );
-                output_lbl.set_alignment( 0, 0 );
+                output_lbl.set_halign( Gtk.Align.START );
 
                 var input_grid = new Gtk.Grid();
                 int input_y_iter = 0;
