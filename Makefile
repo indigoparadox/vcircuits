@@ -16,6 +16,7 @@ OBJECTS := \
 	src/dashlets/rest.vala \
 	src/dashlets/notebook.vala \
 	src/dashsource/mqtt.vala \
+	src/dashsource/rest.vala \
 	src/dashboard.vala \
 	src/dashsource.vala \
 	src/password.vala \

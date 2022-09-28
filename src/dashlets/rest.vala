@@ -10,7 +10,7 @@ namespace Dashboard {
 
         private class InputOutput {
             public string name;
-            public bool is4k;
+            public bool flag;
             public string id;
         }
 
@@ -56,7 +56,7 @@ namespace Dashboard {
                 int input_x_iter = 0;
 
                 foreach( var input in this.inputs ) {
-                    if( input.is4k && !output.is4k ) {
+                    if( input.flag && !output.flag ) {
                         continue;
                     }
 
@@ -102,7 +102,7 @@ namespace Dashboard {
             foreach( var input_iter in config_obj.get_array_member( "inputs" ).get_elements() ) {
                 var input = new InputOutput();
                 var input_obj = input_iter.get_object();
-                input.is4k = input_obj.get_boolean_member( "is4k" );
+                input.flag = input_obj.get_boolean_member( "flag" );
                 input.name = input_obj.get_string_member( "name" );
                 input.id = input_obj.get_string_member( "id" );
                 this.inputs.append( input );
@@ -111,7 +111,7 @@ namespace Dashboard {
             foreach( var output_iter in config_obj.get_array_member( "outputs" ).get_elements() ) {
                 var output = new InputOutput();
                 var output_obj = output_iter.get_object();
-                output.is4k = output_obj.get_boolean_member( "is4k" );
+                output.flag = output_obj.get_boolean_member( "flag" );
                 output.name = output_obj.get_string_member( "name" );
                 output.id = output_obj.get_string_member( "id" );
                 this.outputs.append( output );

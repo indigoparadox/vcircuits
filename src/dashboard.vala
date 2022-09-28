@@ -103,6 +103,10 @@ namespace Dashboard {
                 case "mqtt":
                     source_out = new DashSourceMQTT( this, source_key );
                     break;
+
+                case "rest":
+                    source_out = new DashSourceREST( this, source_key );
+                    break;
             
                 /* case "imap":
                     source_out = new DashSourceIMAP( this, source_key );
