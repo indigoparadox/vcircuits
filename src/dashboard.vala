@@ -6,22 +6,11 @@ using DashSource;
 namespace Dashboard {
 
     public interface DashletBuilder : GLib.Object {
-        public abstract void build_title( Dashboard.Dashlet child );
-        public abstract void build_in_box( Dashboard.Dashlet child );
+        public abstract void build_in_box( Dashlet child );
     }
 
     public class Dashboard : GLib.Object, DashletBuilder {
 
-        public abstract class Dashlet : GLib.Object {
-            public string title = null;
-            public Dashboard dashboard;
-            public string topic = null;
-            public string source = null;
-            public DashletBuilder builder = null;
-    
-            public abstract void build( Gtk.Box box );
-            public abstract void config( Json.Object config_obj );
-        }
         public List<Dashlet> dashlets;
         public HashTable<string, DashSource.DashSource> sources;
         
@@ -32,8 +21,7 @@ namespace Dashboard {
 
         public class DashletBreak : Dashlet {
             public DashletBreak( Dashboard dashboard_in ) {
-                this.dashboard = dashboard_in;
-                this.topic = null;
+                base( dashboard_in );
             }
             public override void build( Gtk.Box box ) {
                 this.dashboard.current_column = new Gtk.Box( Gtk.Orientation.VERTICAL, 1 );
@@ -126,7 +114,7 @@ namespace Dashboard {
             }
         }
 
-        public Dashboard.Dashlet config_dashlet( Json.Object dashlet_obj ) {
+        public Dashlet config_dashlet( Json.Object dashlet_obj ) {
                
             // Parse Dashlet config.
             Dashlet dashlet_out = null;
@@ -153,7 +141,6 @@ namespace Dashboard {
             if( null != dashlet_out ) {
                 debug( "adding dashlet to dashboard..." );
                 dashlet_out.builder = this;
-                dashlet_out.title = dashlet_obj.get_string_member( "title" );
                 dashlets.append( dashlet_out );
 
                 // Make sure notebook is appended above before its children.
@@ -171,22 +158,15 @@ namespace Dashboard {
             } );
         }
 
-        public void build_title( Dashboard.Dashlet child ) {
-            var label = new Label( child.title );
-            this.current_column.add( label );
-            var context = label.get_style_context();
-            context.add_class( "circuits-dashlet-title" );
-            label.set_halign( Gtk.Align.START );
+        public void build_title( Dashlet child ) {
         }
 
-        public void build_in_box( Dashboard.Dashlet child ) {
+        public void build_in_box( Dashlet child ) {
             // Draw dashlet using its individual drawing method.
             debug( "building box for: %s", child.title );
             Gtk.Box box = new Gtk.Box( Gtk.Orientation.VERTICAL, 1 );
             this.current_column.add( box );
             child.build( box );
-            var context = box.get_style_context();
-            context.add_class( "circuits-dashlet-box" );
         }
 
         public void build() {
@@ -196,11 +176,6 @@ namespace Dashboard {
             this.rows.add( this.current_column );
 
             foreach( var dashlet in dashlets ) {
-                // Create dashlet title.
-                if( null != dashlet.title ) {
-                    dashlet.builder.build_title( dashlet );
-                }
-
                 dashlet.builder.build_in_box( dashlet );
             }
 

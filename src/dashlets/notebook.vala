@@ -11,39 +11,35 @@ namespace Dashboard {
         public Gtk.Box notebook_page = null;
         public Gtk.Label label;
 
-        public void build_title( Dashboard.Dashlet child ) {
-            var label = new Label( child.title );
-            this.notebook_page.add( label );
-            var context = label.get_style_context();
-            context.add_class( "circuits-dashlet-title" );
-            label.set_halign( Gtk.Align.START );
-        }
-
-        public void build_in_box( Dashboard.Dashlet child ) {
+        public void build_in_box( Dashlet child ) {
             // Draw dashlet using its individual drawing method.
             debug( "building notebook box for: %s", child.title );
             Gtk.Box box = new Gtk.Box( Gtk.Orientation.VERTICAL, 1 );
             assert( null != this.notebook_page );
             this.notebook_page.add( box );
             child.build( box );
-            var context = box.get_style_context();
-            context.add_class( "circuits-dashlet-box" );
             this.notebook_page.show_all();
         }
     }
 
-    public class DashletNotebook : Dashboard.Dashlet {
+    public class DashletNotebook : Dashlet {
 
         public List<DashletNotebookTab> tabs;
         public Gtk.Notebook notebook;
 
         public DashletNotebook( Dashboard dashboard_in ) {
-            this.dashboard = dashboard_in;
+            base( dashboard_in );
+
             this.tabs = new List<DashletNotebookTab>();
         }
 
         public override void build( Gtk.Box box ) {
+            base.build( box );
+
             this.notebook = new Gtk.Notebook();
+            var context = this.notebook.get_style_context();
+            context.add_class( "circuits-dashlet-notebook" );
+            this.notebook.hexpand = true;
 
             foreach( var tab in this.tabs ) {
                 debug( "creating notebook page for: %s", tab.title );
@@ -58,6 +54,8 @@ namespace Dashboard {
         }
 
         public override void config( Json.Object config_obj ) {
+            base.config( config_obj );
+
             var config_tabs = config_obj.get_object_member( "contents" );
             foreach( var tab_key in config_tabs.get_members() ) {
 

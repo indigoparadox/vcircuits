@@ -6,7 +6,7 @@ using Secret;
 
 namespace Dashboard {
 
-    public class DashletREST : Dashboard.Dashlet {
+    public class DashletREST : Dashlet {
 
         private class InputOutput {
             public string name;
@@ -22,12 +22,14 @@ namespace Dashboard {
         int columns;
 
         public DashletREST( Dashboard dashboard_in ) {
-            this.dashboard = dashboard_in;
+            base( dashboard_in );
+
             this.inputs = new List<InputOutput>();
             this.outputs = new List<InputOutput>();
         }
 
         public override void build( Gtk.Box box ) {
+            base.build( box );
 
             if( null != this.user ) {
                 // Grab password once at the beginning.
@@ -98,6 +100,8 @@ namespace Dashboard {
         }
 
         public override void config( Json.Object config_obj ) {
+            base.config( config_obj );
+
             this.url = config_obj.get_string_member( "url" );
             debug( "REST url: %s", this.url );
 

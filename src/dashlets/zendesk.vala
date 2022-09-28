@@ -3,13 +3,13 @@ using Gtk;
 using Json;
 
 namespace Dashboard {
-    public class DashletZendesk : Dashboard.Dashlet {
+    public class DashletZendesk : Dashlet {
         public Gtk.ListBox listbox;
         public string ticket_class;
         private Gtk.Label updated_label;
 
         public DashletZendesk( Dashboard dashboard_in ) {
-            this.dashboard = dashboard_in;
+            base( dashboard_in );
         }
 
         private void parse_tickets( string topic, string msg ) {
@@ -60,6 +60,8 @@ namespace Dashboard {
         }
 
         public override void build( Gtk.Box box ) {
+            base.build( box );
+            
             this.updated_label = new Gtk.Label( "" );
             this.updated_label.set_halign( Gtk.Align.START );
             var context = this.updated_label.get_style_context();
@@ -74,11 +76,10 @@ namespace Dashboard {
         }
 
         public override void config( Json.Object config_obj ) {
-            this.topic = config_obj.get_string_member( "topic" );
+            base.config( config_obj );
+            
             debug( "topic: %s", this.topic );
             this.ticket_class = config_obj.get_string_member( "ticketclass" );
-
-            this.source = config_obj.get_string_member( "source" );
 
             this.dashboard.sources.foreach( ( k, v ) => {
                 // Skip non-subscribed sources.

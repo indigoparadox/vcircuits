@@ -18,6 +18,7 @@ OBJECTS := \
 	src/dashsource/mqtt.vala \
 	src/dashsource/rest.vala \
 	src/dashboard.vala \
+	src/dashlet.vala \
 	src/dashsource.vala \
 	src/password.vala \
 	src/main.vala
