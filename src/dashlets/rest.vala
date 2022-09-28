@@ -45,11 +45,15 @@ namespace Dashboard {
             }
 
             foreach( var output in this.outputs ) {
-                var output_lbl = new Gtk.Label( output.name );
-                var context = output_lbl.get_style_context();
-                context.add_class( "circuits-rest-output-title" );
-                box.add( output_lbl );
-                output_lbl.set_halign( Gtk.Align.START );
+                Gtk.StyleContext context = null;
+
+                if( 1 < this.outputs.length() ) {
+                    var output_lbl = new Gtk.Label( output.name );
+                    context = output_lbl.get_style_context();
+                    context.add_class( "circuits-rest-output-title" );
+                    box.add( output_lbl );
+                    output_lbl.set_halign( Gtk.Align.START );
+                }
 
                 var input_grid = new Gtk.Grid();
                 int input_y_iter = 0;
