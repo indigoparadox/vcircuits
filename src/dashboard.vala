@@ -96,9 +96,9 @@ namespace Dashboard {
                     source_out = new DashSourceREST( this, source_key );
                     break;
             
-                /* case "imap":
+                case "imap":
                     source_out = new DashSourceIMAP( this, source_key );
-                    break; */
+                    break;
                 }
     
                 if( null != source_out ) {
@@ -127,6 +127,10 @@ namespace Dashboard {
             
             case "rest":
                 dashlet_out = new DashletREST( this );
+                break;
+
+            case "imap":
+                dashlet_out = new DashletIMAP( this );
                 break;
 
             case "notebook":

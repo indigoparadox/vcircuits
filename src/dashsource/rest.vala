@@ -24,7 +24,7 @@ namespace DashSource {
         }
 
         private bool poll_topics() {
-            debug( "polling %s:%d for %s...", this.host, this.port, this.user );
+            debug( "polling REST %s:%d for %s...", this.host, this.port, this.user );
 
             foreach( var dashlet in this.dashboard.dashlets ) {
                 if( dashlet.source != this.source ) {
