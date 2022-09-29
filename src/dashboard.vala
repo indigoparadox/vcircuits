@@ -129,8 +129,8 @@ namespace Dashboard {
                 dashlet_out = new DashletREST( this );
                 break;
 
-            case "imap":
-                dashlet_out = new DashletIMAP( this );
+            case "mail":
+                dashlet_out = new DashletMail( this );
                 break;
 
             case "notebook":

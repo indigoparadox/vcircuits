@@ -14,7 +14,7 @@ PACKAGES := --vapidir src/vapi \
 OBJECTS := \
 	src/dashlets/zendesk.vala \
 	src/dashlets/rest.vala \
-	src/dashlets/imap.vala \
+	src/dashlets/mail.vala \
 	src/dashlets/notebook.vala \
 	src/dashsource/imap.vala \
 	src/dashsource/mqtt.vala \

@@ -2,12 +2,12 @@
 using Gtk;
 
 namespace Dashboard {
-    public class DashletIMAP : Dashlet {
+    public class DashletMail : Dashlet {
         public Gtk.ListBox listbox;
         public string ticket_class;
         private Gtk.Label updated_label;
 
-        public DashletIMAP( Dashboard dashboard_in ) {
+        public DashletMail( Dashboard dashboard_in ) {
             base( dashboard_in );
         }
 
