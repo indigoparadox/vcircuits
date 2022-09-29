@@ -1,6 +1,5 @@
 
 using Mosquitto;
-using Gtk;
 using Json;
 using Dashboard;
 

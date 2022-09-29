@@ -1,8 +1,5 @@
 
-using Gtk;
 using Json;
-using Curl;
-using Secret;
 using Dashboard;
 
 namespace DashSource {

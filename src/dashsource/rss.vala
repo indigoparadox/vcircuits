@@ -1,7 +1,5 @@
 
-using Gtk;
 using Json;
-using Curl;
 using Dashboard;
 using Xml;
 
