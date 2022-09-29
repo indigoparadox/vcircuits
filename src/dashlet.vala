@@ -1,6 +1,7 @@
 
 using Gtk;
 using Json;
+using Curl;
 
 namespace Dashboard {
 

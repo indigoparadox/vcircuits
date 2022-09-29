@@ -9,7 +9,8 @@ PACKAGES := --vapidir src/vapi \
 	--pkg json-glib-1.0 \
 	--pkg posix \
 	--pkg libcurl \
-	--pkg libsecret-1
+	--pkg libsecret-1 \
+	--pkg libxml-2.0
 
 OBJECTS := \
 	src/dashlets/zendesk.vala \
@@ -19,6 +20,7 @@ OBJECTS := \
 	src/dashsource/imap.vala \
 	src/dashsource/mqtt.vala \
 	src/dashsource/rest.vala \
+	src/dashsource/rss.vala \
 	src/dashboard.vala \
 	src/dashlet.vala \
 	src/dashsource.vala \

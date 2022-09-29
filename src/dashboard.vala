@@ -95,6 +95,10 @@ namespace Dashboard {
                 case "rest":
                     source_out = new DashSourceREST( this, source_key );
                     break;
+
+                case "rss":
+                    source_out = new DashSourceRSS( this, source_key );
+                    break;
             
                 case "imap":
                     source_out = new DashSourceIMAP( this, source_key );
