@@ -43,7 +43,9 @@ namespace Dashboard {
                     ticket_subject.printf(
                         "[%d] %s",
                         (int)ticket_obj.get_int_member( "id" ),
-                        ticket_obj.get_string_member( "subject" ) );
+                        ticket_obj.get_string_member( "subject" )
+                            .replace( "\n", " " )
+                            .replace( "\r", " " ) );
                     debug( "found ticket: %s", ticket_subject.str );
 
                     // Add ticket to listbox.
