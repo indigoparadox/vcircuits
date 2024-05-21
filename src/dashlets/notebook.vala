@@ -1,4 +1,6 @@
 
+// vi:syntax=cs
+
 using Gtk;
 using Json;
 using DashSource;
@@ -26,10 +28,12 @@ namespace Dashboard {
 
         public List<DashletNotebookTab> tabs;
         public Gtk.Notebook notebook;
+        public bool expand;
 
         public DashletNotebook( Dashboard dashboard_in ) {
             base( dashboard_in );
 
+            this.expand = false;
             this.tabs = new List<DashletNotebookTab>();
         }
 
@@ -39,7 +43,7 @@ namespace Dashboard {
             this.notebook = new Gtk.Notebook();
             var context = this.notebook.get_style_context();
             context.add_class( "circuits-dashlet-notebook" );
-            this.notebook.hexpand = true;
+            this.notebook.hexpand = this.expand;
 
             foreach( var tab in this.tabs ) {
                 debug( "creating notebook page for: %s", tab.title );
@@ -55,6 +59,8 @@ namespace Dashboard {
 
         public override void config( Json.Object config_obj ) {
             base.config( config_obj );
+
+            this.expand = config_obj.get_boolean_member( "expand" );
 
             var config_tabs = config_obj.get_object_member( "contents" );
             foreach( var tab_key in config_tabs.get_members() ) {
