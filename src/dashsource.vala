@@ -1,4 +1,6 @@
 
+// vi:syntax=cs
+
 using Dashboard;
 using Curl;
 
@@ -104,6 +106,10 @@ namespace DashSource {
             this.host = config_obj.get_string_member( "host" );
             this.port = (int)config_obj.get_int_member( "port" );
             this.user = config_obj.get_string_member( "user" );
+        }
+
+        public virtual void send( string topic, string message ) {
+            debug( "send not implemented: %s: %s", topic, message );
         }
     }
 }

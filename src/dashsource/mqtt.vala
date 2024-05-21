@@ -1,4 +1,6 @@
 
+// vi:syntax=cs
+
 using Mosquitto;
 using Json;
 using Dashboard;
@@ -74,6 +76,10 @@ namespace DashSource {
 
                 return true;
             }, 0 );
+        }
+
+        public override void send( string topic, string message ) {
+            this.m.publish( null, topic, message.data, 0, false );
         }
     }
 }
