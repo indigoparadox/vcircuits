@@ -1,4 +1,6 @@
 
+// vi:syntax=cs
+
 using Gtk;
 using Json;
 
@@ -7,6 +9,7 @@ namespace Dashboard {
         public Gtk.ListBox listbox;
         public string ticket_class;
         private Gtk.Label updated_label;
+        private Gtk.ScrolledWindow scroller;
 
         public DashletZendesk( Dashboard dashboard_in ) {
             base( dashboard_in );
@@ -70,10 +73,14 @@ namespace Dashboard {
             context.add_class( "circuits-zendesk-updated" );
             box.add( this.updated_label );
 
+            this.scroller = new Gtk.ScrolledWindow( null, null );
+
             this.listbox = new ListBox();
             context = this.listbox.get_style_context();
             context.add_class( "circuits-zendesk-tickets" );
             context.add_class( this.ticket_class );
+            //this.scroller.add( this.listbox );
+            //box.add( this.scroller );
             box.add( this.listbox );
         }
 
