@@ -1,4 +1,6 @@
 
+// vi:syntax=cs
+
 using Gtk;
 using Json;
 using DashSource;

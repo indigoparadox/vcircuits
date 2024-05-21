@@ -1,4 +1,6 @@
 
+// vi:syntax=cs
+
 using Mosquitto;
 using Gtk;
 using Json;
