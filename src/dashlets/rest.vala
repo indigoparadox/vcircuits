@@ -1,4 +1,6 @@
 
+// vi:syntax=cs
+
 using Gtk;
 using Json;
 using Curl;
@@ -15,6 +17,7 @@ namespace Dashboard {
         }
 
         string url = null;
+        string post = null;
         string user = null;
         PasswordHolder password;
         List<InputOutput> inputs;
@@ -76,12 +79,25 @@ namespace Dashboard {
                             .replace( "{input}", input.id.to_string() )
                             .replace( "{output}", output.id.to_string() );
 
+                        string post_data = null;
+                        if( null != this.post ) {
+                            post_data = this.post
+                                .replace( "{input}", input.id.to_string() )
+                                .replace( "{output}", output.id.to_string() );
+                        }
+
                         var handle = new EasyHandle();
                         handle.setopt( Option.URL, click_url );
                         handle.setopt( Option.VERBOSE, 0 );
                         handle.setopt( Option.STDERR, 0 );
+                        if( null != post_data ) {
+                            handle.setopt( Option.POSTFIELDS, post_data );
+                        }
                         if( null != this.user ) {
-                            handle.setopt( Option.USERPWD, "%s:%s".printf( this.user, this.password.password ) );
+                            handle.setopt(
+                                Option.USERPWD,
+                                "%s:%s".printf(
+                                    this.user, this.password.password ) );
                         }
                         handle.perform();
                     } );
@@ -104,6 +120,8 @@ namespace Dashboard {
 
             this.url = config_obj.get_string_member( "url" );
             debug( "REST url: %s", this.url );
+
+            this.post = config_obj.get_string_member( "post" );
 
             this.columns = (int)config_obj.get_int_member( "columns" );
 
