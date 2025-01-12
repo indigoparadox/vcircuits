@@ -14,6 +14,7 @@ namespace Dashboard {
     public class Dashboard : GLib.Object, DashletBuilder {
 
         public List<Dashlet> dashlets;
+        public HashTable<string, Json.Array> lists;
         public HashTable<string, DashSource.DashSource> sources;
         
         private Gtk.Window window;
@@ -35,6 +36,7 @@ namespace Dashboard {
         public Dashboard() {
             this.dashlets = new List<Dashlet>();
             this.sources = new HashTable<string, DashSource.DashSource>( str_hash, str_equal );
+            this.lists = new HashTable<string, Json.Array>( str_hash, str_equal );
             this.window = new Gtk.Window();
         }
 
@@ -114,6 +116,14 @@ namespace Dashboard {
                 }
             }
 
+            // Parse lists config so dashlets can reference them.
+            var config_lists = config_root.get_object_member( "lists" );
+            foreach( var list_key in config_lists.get_members() ) {
+               debug( "storing list: %s", list_key );
+               this.lists[list_key] =
+                  config_lists.get_array_member( list_key );
+            }
+
             var config_dashboard = config_root.get_array_member( "dashboard" );
             foreach( var dashlet_iter in config_dashboard.get_elements() ) {
                 this.config_dashlet( dashlet_iter.get_object() );
@@ -132,7 +142,7 @@ namespace Dashboard {
                 break;
             
             case "rest":
-                dashlet_out = new DashletREST( this );
+                dashlet_out = new DashletRESTIO( this );
                 break;
 
             case "mail":

@@ -8,7 +8,7 @@ using Secret;
 
 namespace Dashboard {
 
-    public class DashletREST : Dashlet {
+    public class DashletRESTIO : Dashlet {
 
         private class InputOutput {
             public string name;
@@ -24,7 +24,7 @@ namespace Dashboard {
         List<InputOutput> outputs;
         int columns;
 
-        public DashletREST( Dashboard dashboard_in ) {
+        public DashletRESTIO( Dashboard dashboard_in ) {
             base( dashboard_in );
 
             this.inputs = new List<InputOutput>();
@@ -115,6 +115,20 @@ namespace Dashboard {
             }
         }
 
+        private void load_list(
+            Json.Array list_in, ref List<InputOutput> xputs
+        ) {
+            foreach( Json.Node input_iter in list_in.get_elements() ) {
+                debug( "list iter" );
+                var input = new InputOutput();
+                Json.Object input_obj = input_iter.get_object();
+                input.flag = input_obj.get_boolean_member( "flag" );
+                input.name = input_obj.get_string_member( "name" );
+                input.id = input_obj.get_string_member( "id" );
+                xputs.append( input );
+            }
+        }
+
         public override void config( Json.Object config_obj ) {
             base.config( config_obj );
 
@@ -125,13 +139,17 @@ namespace Dashboard {
 
             this.columns = (int)config_obj.get_int_member( "columns" );
 
-            foreach( var input_iter in config_obj.get_array_member( "inputs" ).get_elements() ) {
-                var input = new InputOutput();
-                var input_obj = input_iter.get_object();
-                input.flag = input_obj.get_boolean_member( "flag" );
-                input.name = input_obj.get_string_member( "name" );
-                input.id = input_obj.get_string_member( "id" );
-                this.inputs.append( input );
+            // Determine if the input list is in this part of the JSON file
+            // directly, or if it is a reference to a stored list.
+            var input_list = config_obj.get_member( "inputs" );
+            if( Json.NodeType.ARRAY == input_list.get_node_type() ) {
+                debug( "loading inline list..." );
+                this.load_list( input_list.get_array(), ref this.inputs );
+            } else {
+                var list_key = config_obj.get_string_member( "inputs" );
+                debug( "loading stored list: %s", list_key );
+                this.load_list(
+                    this.dashboard.lists[list_key], ref this.inputs );
             }
 
             foreach( var output_iter in config_obj.get_array_member( "outputs" ).get_elements() ) {

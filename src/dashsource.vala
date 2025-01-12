@@ -28,7 +28,7 @@ namespace DashSource {
         
         public abstract void connect_source();
 
-        public DashSource( Dashboard.Dashboard dashboard_in, string source_in ) {
+        protected DashSource( Dashboard.Dashboard dashboard_in, string source_in ) {
             this.dashboard = dashboard_in;
             this.source = source_in;
         }
