@@ -141,7 +141,7 @@ namespace Dashboard {
                 dashlet_out = new DashletZendesk( this );
                 break;
             
-            case "rest":
+            case "rest-io":
                 dashlet_out = new DashletRESTIO( this );
                 break;
 
