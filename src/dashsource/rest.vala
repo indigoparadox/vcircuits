@@ -1,4 +1,6 @@
 
+// vi:syntax=cs
+
 using Json;
 using Dashboard;
 
@@ -8,13 +10,16 @@ namespace DashSource {
 
         int frequency = 0;
 
-        public DashSourceREST( Dashboard.Dashboard dashboard_in, string source_in ) {
+        public DashSourceREST(
+            Dashboard.Dashboard dashboard_in, string source_in
+        ) {
             base( dashboard_in, source_in );
         }
 
         public override void connect_source() {
 
-            debug( "starting up REST polling for %s@%s:%d", this.user, this.host, this.port );
+            debug( "starting up REST polling for %s@%s:%d",
+                this.user, this.host, this.port );
 
             this.ask_password();
 
@@ -31,7 +36,8 @@ namespace DashSource {
 
             this.frequency = (int)config_obj.get_int_member( "frequency" );
 
-            debug( "REST source: %s@%s:%d, every %d ms", this.user, this.host, this.port, this.frequency );
+            debug( "REST source: %s@%s:%d, every %d ms",
+                this.user, this.host, this.port, this.frequency );
         }
     }
 }

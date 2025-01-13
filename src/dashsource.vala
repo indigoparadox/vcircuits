@@ -12,6 +12,11 @@ namespace DashSource {
         return size * nmemb;
     }
 
+    public enum AuthType {
+        PASSWORD,
+        BEARER,
+    }
+
     public abstract class DashSource {
         protected Dashboard.Dashboard dashboard;
         protected string source;
@@ -21,26 +26,47 @@ namespace DashSource {
         protected string protocol;
         protected Dashboard.PasswordHolder password;
         protected bool busy = false;
+        protected AuthType auth_type = AuthType.PASSWORD;
         
-        protected delegate void ProcessFunction( string topic, string response );
+        protected delegate void ProcessFunction(
+            string topic, string response );
 
         public signal void messaged( string topic, string message );
         
         public abstract void connect_source();
 
-        protected DashSource( Dashboard.Dashboard dashboard_in, string source_in ) {
+        protected DashSource(
+            Dashboard.Dashboard dashboard_in, string source_in
+        ) {
             this.dashboard = dashboard_in;
             this.source = source_in;
         }
 
-        protected string fetch_curl( string url, string custom_request ) {
+        protected string fetch_curl(
+            string url, string? custom_request, string? post_data
+        ) {
             var handle = new EasyHandle();
+            Curl.SList headers = null;
+            string bearer_str = null;
             handle.setopt( Option.URL, url );
             handle.setopt( Option.NOPROGRESS, 1L );
-            handle.setopt( Option.USERPWD, "%s:%s".printf( this.user, this.password.password ) );
-
+            if( AuthType.PASSWORD == this.auth_type && null != this.user ) {
+                handle.setopt( Option.USERPWD, "%s:%s".printf(
+                    this.user, this.password.password ) );
+            } else if( AuthType.BEARER == this.auth_type ) {
+                // Format the bearer string into a header.
+                bearer_str = "Authorization: Bearer %s".printf(
+                    this.password.password );
+                headers = Curl.SList.append( headers, bearer_str );
+            }
+            if( null != post_data ) {
+                  handle.setopt( Option.POSTFIELDS, post_data );
+            }
             if( null != custom_request ) {
                 handle.setopt( Option.CUSTOMREQUEST, custom_request );
+            }
+            if( null != headers ) {
+                handle.setopt( Option.HTTPHEADER, headers );
             }
 
             StringBuilder response = new StringBuilder();
@@ -54,31 +80,50 @@ namespace DashSource {
             return response.str;
         }
 
-        protected void poll_topics( ProcessFunction proc_func, string? custom_request ) {
-            debug( "polling %s://%s@%s:%d...", this.protocol, this.user, this.host, this.port );
+        protected void poll_topics(
+            DashSource.ProcessFunction proc_func, string? custom_request
+        ) {
+            // I don't like having this in the DashSource base class, but
+            // things like RSS and IMAP use it and it helps reduce redundant
+            // code.
+
+            // Things that are totally irrelevant and have their own polling
+            // mechanisms, like MQTT, can just totally override it and call
+            // those.
 
             foreach( var dashlet in this.dashboard.dashlets ) {
+                // Don't update irrelevant dashlets.
                 if( dashlet.source != this.source ) {
                     continue;
                 }
 
-                if( null == this.password.password ) {
-                    warning( "%s@%s:%d: no password found!", this.user, this.host, this.port );
-                    return;
-                }
+                debug( "polling %s://%s@%s:%d/%s...",
+                    this.protocol, this.user, this.host, this.port,
+                     dashlet.topic );
 
+                /* if( null == this.password.password ) {
+                    warning( "%s@%s:%d: no password found!",
+                        this.user, this.host, this.port );
+                    return;
+                } */
+
+                // Busy lock.
                 if( this.busy ) {
                     warning( "poller busy!" );
                     return;
                 }
-
                 this.busy = true;
+
+                // Use CURL to fetch the response and then feed it to the
+                // dashlet's processor function.
                 var response = this.fetch_curl(
-                    "%s://%s:%d/%s".printf( this.protocol, this.host, this.port, dashlet.topic ),
-                    custom_request );
+                    "%s://%s:%d/%s".printf(
+                        this.protocol, this.host, this.port, dashlet.topic ),
+                    custom_request, dashlet.source_post );
 
                 proc_func( dashlet.topic, response );
 
+                // Busy unlock.
                 this.busy = false;
             }
         }
@@ -106,6 +151,11 @@ namespace DashSource {
             this.host = config_obj.get_string_member( "host" );
             this.port = (int)config_obj.get_int_member( "port" );
             this.user = config_obj.get_string_member( "user" );
+            var auth_type = config_obj.get_string_member( "auth" );
+            if( "bearer" == auth_type ) {
+                debug( "using bearer authentication!" );
+                this.auth_type = AuthType.BEARER;
+            }
         }
 
         public virtual void send( string topic, string message ) {

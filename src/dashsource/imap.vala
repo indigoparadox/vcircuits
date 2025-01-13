@@ -1,4 +1,6 @@
 
+// vi:syntax=cs
+
 using Json;
 using Dashboard;
 
@@ -26,8 +28,11 @@ namespace DashSource {
                 for( var i = 2 ; i < response_arr.length - 4 ; i++ ) {
                     debug( response_arr[i] );
                     var msg_header = this.fetch_curl(
-                        "%s://%s:%d/%s".printf( this.protocol, this.host, this.port, topic ),
-                        "UID FETCH %s (FLAGS BODY[HEADER.FIELDS (Subject)])".printf( response_arr[i] ) );
+                        "%s://%s:%d/%s".printf(
+                            this.protocol, this.host, this.port, topic ),
+                        "UID FETCH %s (FLAGS BODY[HEADER.FIELDS (Subject)])"
+                            .printf( response_arr[i] ),
+                        null );
 
                     // TODO
 

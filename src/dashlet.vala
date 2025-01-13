@@ -12,6 +12,7 @@ namespace Dashboard {
         public Dashboard dashboard;
         public string topic = null;
         public string source = null;
+        public string source_post = null;
         public DashletBuilder builder = null;
 
         protected Dashlet( Dashboard dashboard_in ) {
@@ -36,6 +37,7 @@ namespace Dashboard {
             this.title = config_obj.get_string_member( "title" );
             this.topic = config_obj.get_string_member( "topic" );
             this.source = config_obj.get_string_member( "source" );
+            this.source_post = config_obj.get_string_member( "source_post" );
         }
     }
 }

@@ -111,6 +111,7 @@ namespace Dashboard {
     
                 if( null != source_out ) {
                     // Source was successfully loaded.
+                    debug( "configuring source..." );
                     source_out.config( source_obj );
                     this.sources[source_key] = source_out;
                 }
@@ -155,6 +156,10 @@ namespace Dashboard {
             
             case "break":
                 dashlet_out = new DashletBreak( this );
+                break;
+
+            case "text":
+                dashlet_out = new DashletText( this );
                 break;
             }
 
