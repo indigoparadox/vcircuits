@@ -12,8 +12,9 @@ namespace Dashboard {
             base( dashboard_in );
         }
 
-        private void parse_tickets( string topic, string msg ) {
-            this.updated_label.set_text( msg );
+        private void update_label( string topic, string msg ) {
+            string msg_cleaned = msg.replace( "<br />", "\n" );
+            this.updated_label.set_text( msg_cleaned );
         }
 
         public override void build( Gtk.Box box ) {
@@ -37,7 +38,7 @@ namespace Dashboard {
 
                 debug( "connecting to source: %s", k );
 
-                v.messaged.connect( this.parse_tickets );
+                v.messaged.connect( this.update_label );
             } );
         }
     }
