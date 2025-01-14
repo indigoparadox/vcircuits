@@ -17,6 +17,12 @@ namespace DashSource {
         BEARER,
     }
 
+    public errordomain UpdateError {
+        OTHER,
+        UNAUTHORIZED,
+        NOT_FOUND
+    }
+
     public abstract class DashSource {
         protected Dashboard.Dashboard dashboard;
         protected string source;
@@ -44,7 +50,7 @@ namespace DashSource {
 
         protected string fetch_curl(
             string url, string? custom_request, string? post_data
-        ) {
+        ) throws UpdateError {
             var handle = new EasyHandle();
             Curl.SList headers = null;
             string bearer_str = null;
@@ -72,10 +78,21 @@ namespace DashSource {
             StringBuilder response = new StringBuilder();
             handle.setopt( Option.WRITEFUNCTION, write_curl );
             handle.setopt( Option.WRITEDATA, ref response );
+
+            // TODO: Make this configurable.
+            handle.setopt( Option.SSL_VERIFYPEER, false );
+            handle.setopt( Option.SSL_VERIFYHOST, false );
             
             handle.perform();
 
-            // TODO: Handle protocol error.
+            // TODO: Implement timeout.
+
+            // Handle possible protocol error.
+            long res = 0;
+            handle.getinfo( Curl.Info.RESPONSE_CODE, out res );
+            if( 200 != res ) {
+               throw new UpdateError.OTHER( "%ld", res );
+            }
 
             return response.str;
         }
@@ -116,12 +133,19 @@ namespace DashSource {
 
                 // Use CURL to fetch the response and then feed it to the
                 // dashlet's processor function.
-                var response = this.fetch_curl(
-                    "%s://%s:%d/%s".printf(
-                        this.protocol, this.host, this.port, dashlet.topic ),
-                    custom_request, dashlet.source_post );
+                try {
+                    var response = this.fetch_curl(
+                        "%s://%s:%d/%s".printf(
+                            this.protocol, this.host, this.port,
+                                dashlet.topic ),
+                            custom_request, dashlet.source_post );
 
-                proc_func( dashlet.topic, response );
+                    debug( "response: %s", response );
+
+                    proc_func( dashlet.topic, response );
+                } catch( UpdateError ex ) {
+                    warning( "error while updating: %s", ex.message );
+                }
 
                 // Busy unlock.
                 this.busy = false;

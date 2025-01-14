@@ -38,8 +38,8 @@ namespace Curl {
 		[CCode (cname = "curl_easy_escape")]
 		public string escape (string str, int length);
 		[CCode (cname = "curl_easy_getinfo")]
-		[PrintfFormat]
-		public Curl.Code getinfo (Curl.Info info, ...);
+		//[PrintfFormat]
+		public Curl.Code getinfo (Curl.Info info, out long r);
 		[CCode (cname = "curl_easy_pause")]
 		public Curl.Code easy_pause (int bitmask);
 		[CCode (cname = "curl_easy_perform")]
