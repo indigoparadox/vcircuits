@@ -161,6 +161,10 @@ namespace Dashboard {
             case "text":
                 dashlet_out = new DashletText( this );
                 break;
+
+            case "list":
+                dashlet_out = new DashletList( this );
+                break;
             }
 
             if( null != dashlet_out ) {

@@ -32,3 +32,8 @@
     color: orange;
     text-decoration: underline;
 }
+
+.circuits-list-field-unread-true {
+    color: red;
+}
+
