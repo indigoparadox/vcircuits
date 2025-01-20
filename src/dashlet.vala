@@ -14,6 +14,8 @@ namespace Dashboard {
         public string source = null;
         public string source_post = null;
         public DashletBuilder builder = null;
+        public string accept = null;
+        public string content_type = null;
 
         protected Dashlet( Dashboard dashboard_in ) {
             this.dashboard = dashboard_in;

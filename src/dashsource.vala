@@ -33,6 +33,7 @@ namespace DashSource {
         protected Dashboard.PasswordHolder password;
         protected bool busy = false;
         protected AuthType auth_type = AuthType.PASSWORD;
+        protected string? time_fmt = null;
         
         protected delegate void ProcessFunction(
             string topic, string response );
@@ -49,11 +50,17 @@ namespace DashSource {
         }
 
         protected string fetch_curl(
-            string url, string? custom_request, string? post_data
+            string url, string? custom_request, string? post_data,
+            string? accept, string? content_type
         ) throws UpdateError {
             var handle = new EasyHandle();
-            Curl.SList headers = null;
+            unowned Curl.SList headers = null;
             string bearer_str = null;
+            string accept_str = null;
+            string content_type_str = null;
+            string post_proc = null;
+
+            // Fill out CURL options.
             handle.setopt( Option.URL, url );
             handle.setopt( Option.NOPROGRESS, 1L );
             if( AuthType.PASSWORD == this.auth_type && null != this.user ) {
@@ -65,8 +72,29 @@ namespace DashSource {
                     this.password.password );
                 headers = Curl.SList.append( headers, bearer_str );
             }
+            if( null != accept ) {
+                accept_str = "Accept: %s".printf( accept );
+                headers = Curl.SList.append( headers, accept_str );
+            }
+            if( null != content_type ) {
+                content_type_str = "Content-Type: %s".printf( content_type );
+                headers = Curl.SList.append( headers, content_type_str );
+            }
             if( null != post_data ) {
-                  handle.setopt( Option.POSTFIELDS, post_data );
+                  if( null != this.time_fmt ) {
+                      // Sub in date tokens to POST data.
+                      var now = new DateTime.now_local();
+                      post_proc = post_data.replace( "<now>",
+                          now.format( this.time_fmt ) );
+                      var now_minus_one = now.add_minutes( -1 );
+                      post_proc = post_proc.replace( "<now_minus_one>",
+                          now_minus_one.format( this.time_fmt ) );
+                      debug( "post_proc: %s", post_proc );
+                  } else {
+                      post_proc = post_data;
+                  }
+
+                  handle.setopt( Option.POSTFIELDS, post_proc );
             }
             if( null != custom_request ) {
                 handle.setopt( Option.CUSTOMREQUEST, custom_request );
@@ -85,13 +113,19 @@ namespace DashSource {
             
             handle.perform();
 
+            debug( "performed!" );
+
+            if( null != headers ) {
+                headers.free_all();
+            }
+
             // TODO: Implement timeout.
 
             // Handle possible protocol error.
             long res = 0;
             handle.getinfo( Curl.Info.RESPONSE_CODE, out res );
             if( 200 != res ) {
-               throw new UpdateError.OTHER( "%ld", res );
+                throw new UpdateError.OTHER( "%ld: %s", res, response.str );
             }
 
             return response.str;
@@ -138,7 +172,8 @@ namespace DashSource {
                         "%s://%s:%d/%s".printf(
                             this.protocol, this.host, this.port,
                                 dashlet.topic ),
-                            custom_request, dashlet.source_post );
+                            custom_request, dashlet.source_post,
+                            dashlet.accept, dashlet.content_type );
 
                     debug( "response: %s", response );
 
@@ -174,7 +209,9 @@ namespace DashSource {
             this.protocol = config_obj.get_string_member( "protocol" );
             this.host = config_obj.get_string_member( "host" );
             this.port = (int)config_obj.get_int_member( "port" );
+            // TODO: Handle no user.
             this.user = config_obj.get_string_member( "user" );
+            this.time_fmt = config_obj.get_string_member( "time_fmt" );
             var auth_type = config_obj.get_string_member( "auth" );
             if( "bearer" == auth_type ) {
                 debug( "using bearer authentication!" );
