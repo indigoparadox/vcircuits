@@ -74,7 +74,8 @@ namespace Dashboard {
             var config_options = config_root.get_object_member( "options" );
             int dash_w = (int)config_options.get_int_member( "width" );
             int dash_h = (int)config_options.get_int_member( "height" );
-            var dash_decorated = config_options.get_boolean_member( "decorated" );
+            var dash_decorated =
+                config_options.get_boolean_member( "decorated" );
             if( !dash_decorated ) {
                 this.window.set_decorated( false );
             }
@@ -146,9 +147,9 @@ namespace Dashboard {
                 dashlet_out = new DashletRESTIO( this );
                 break;
 
-            case "mail":
-                dashlet_out = new DashletMail( this );
-                break;
+            //case "mail":
+            //    dashlet_out = new DashletMail( this );
+            //    break;
 
             case "notebook":
                 dashlet_out = new DashletNotebook( this );

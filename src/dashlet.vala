@@ -12,10 +12,7 @@ namespace Dashboard {
         public Dashboard dashboard;
         public string topic = null;
         public string source = null;
-        public string source_post = null;
         public DashletBuilder builder = null;
-        public string accept = null;
-        public string content_type = null;
 
         protected Dashlet( Dashboard dashboard_in ) {
             this.dashboard = dashboard_in;
@@ -39,7 +36,23 @@ namespace Dashboard {
             this.title = config_obj.get_string_member( "title" );
             this.topic = config_obj.get_string_member( "topic" );
             this.source = config_obj.get_string_member( "source" );
-            this.source_post = config_obj.get_string_member( "source_post" );
+
+        }
+
+        public virtual string? get_accept_type() {
+            return null;
+        }
+
+        public virtual string? get_content_type() {
+            return null;
+        }
+
+        public virtual string? get_source_post() {
+            return null;
+        }
+
+        protected string parse_output_tokens( string msg ) {
+            return msg.replace( "<br />", "\n" );
         }
     }
 }

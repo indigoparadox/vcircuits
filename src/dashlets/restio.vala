@@ -172,7 +172,9 @@ namespace Dashboard {
                 debug( "list iter" );
                 var input = new InputOutput();
                 Json.Object input_obj = input_iter.get_object();
-                input.flag = input_obj.get_boolean_member( "flag" );
+                if( input_obj.has_member( "flag" ) ) {
+                    input.flag = input_obj.get_boolean_member( "flag" );
+                }
                 input.name = input_obj.get_string_member( "name" );
                 input.id = input_obj.get_string_member( "id" );
                 xputs.append( input );

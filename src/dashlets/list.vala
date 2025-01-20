@@ -5,12 +5,11 @@ using Gtk;
 using Json;
 
 namespace Dashboard {
-    public class DashletList : Dashlet {
+    public class DashletList : DashletRESTBase {
         public Gtk.ListBox listbox;
-        public string item_class;
+        public string? item_class;
         private List<string> fields;
         private List<string> class_fields;
-        private long max_len = 0;
 
         public DashletList( Dashboard dashboard_in ) {
             base( dashboard_in );
@@ -40,23 +39,9 @@ namespace Dashboard {
                 var item_obj = item_iter.get_object();
                 StringBuilder item_subject = new StringBuilder( "" );
 
-                /*
-                item_subject.printf(
-                    "[%d] %s",
-                    (int)item_obj.get_int_member( "id" ),
-                    item_obj.get_string_member( "subject" )
-                        .replace( "\n", " " )
-                        .replace( "\r", " " ) );
-                */
                 foreach( string field in this.fields ) {
                     string field_cts = item_obj.get_string_member( field );
-                    if(
-                        0 < this.max_len &&
-                        field_cts.length > this.max_len
-                    ) {
-                        // Limit subject length.
-                        field_cts = field_cts.substring( 0, this.max_len );
-                    }
+                    field_cts = this.truncate_max_len( field_cts );
                     item_subject.append( field_cts );
                 }
                 debug( "found item: %s", item_subject.str );
@@ -97,7 +82,9 @@ namespace Dashboard {
             this.listbox = new ListBox();
             var context = this.listbox.get_style_context();
             context.add_class( "circuits-list-items" );
-            context.add_class( this.item_class );
+            if( null != this.item_class ) {
+                context.add_class( this.item_class );
+            }
             box.add( this.listbox );
         }
 
@@ -114,11 +101,9 @@ namespace Dashboard {
         public override void config( Json.Object config_obj ) {
             base.config( config_obj );
             
-            debug( "topic: %s", this.topic );
-
-            this.item_class = config_obj.get_string_member( "item_class" );
-
-            this.max_len = (long)config_obj.get_int_member( "max_len" );
+            if( config_obj.has_member( "item_class" ) ) {
+                this.item_class = config_obj.get_string_member( "item_class" );
+            }
 
             // TODO: Handle stored list.
             this.load_list(
@@ -135,6 +120,8 @@ namespace Dashboard {
                 if( k != this.source ) {
                     return;
                 }
+
+                debug( "connecting to source: %s", k );
 
                 v.messaged.connect( this.parse_items );
             } );

@@ -172,8 +172,9 @@ namespace DashSource {
                         "%s://%s:%d/%s".printf(
                             this.protocol, this.host, this.port,
                                 dashlet.topic ),
-                            custom_request, dashlet.source_post,
-                            dashlet.accept, dashlet.content_type );
+                            custom_request, dashlet.get_source_post(),
+                            dashlet.get_accept_type(),
+                            dashlet.get_content_type() );
 
                     debug( "response: %s", response );
 
