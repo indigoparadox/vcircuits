@@ -1,0 +1,54 @@
+{
+   "sources": {
+      "example_mqtt": {
+         "type": "mqtt",
+         "enabled": true,
+         "uid": "example_kiosk",
+         "host": "mqtt.example.com",
+         "port": 1883,
+         "user": "example_user",
+         "protocol": "mqtt"
+      },
+      "example_rest": {
+         "type": "rest",
+         "enabled": true,
+         "host": "rest.example.com",
+         "port": 80,
+         "user": "bearer",
+         "frequency": 2000,
+         "protocol": "http"
+      }
+   },
+   "lists": {
+      "hdmi_inputs": [
+         { "name": "TV", "flag": true, "id": "1" },
+         { "name": "VCR", "flag": true, "id": "2" },
+         { "name": "Laserdisc", "flag": true, "id": "3" }
+      ],
+      "hdmi_outputs": [
+         { "name": "Main", "id": "1", "flag": false },
+         { "name": "PIP", "id": "2", "flag": false }
+      ]
+   },
+   "options": {
+      "background": "black",
+      "foreground": "white",
+      "width": 800,
+      "height": 460,
+      "decorated": false,
+      "style": ""
+   },
+   "dashboard": [
+      {
+         "title": "HDMI",
+         "type": "rest-io",
+         "url": "http://rest.example.com/cgi-bin/MMX32_Keyvalue.cgi",
+         "post": "{CMD=OUT0{output}:0{input}.",
+         "source": "rest_hdmi",
+         "columns": 3,
+         "style": "",
+         "outputs": "hdmi_outputs",
+         "inputs": "hdmi_inputs"
+      }
+   ]
+}
