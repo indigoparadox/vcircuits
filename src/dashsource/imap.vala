@@ -32,7 +32,8 @@ namespace DashSource {
                             this.protocol, this.host, this.port, topic ),
                         "UID FETCH %s (FLAGS BODY[HEADER.FIELDS (Subject)])"
                             .printf( response_arr[i] ),
-                        null, null, null );
+                        // TODO: Configure timeout.
+                        null, null, null, 30 );
 
                     // TODO
 

@@ -30,8 +30,12 @@ namespace Dashboard {
                 child.destroy();
             }
 
-            //try {
-            parser.load_from_data( msg, -1 );
+            try {
+                parser.load_from_data( msg, -1 );
+            } catch( GLib.Error e ) {
+                critical( "JSON error: %s", e.message );
+                return;
+            }
             var msg_root = parser.get_root().get_array();
 
             foreach( Json.Node item_iter in msg_root.get_elements() ) {
@@ -69,11 +73,6 @@ namespace Dashboard {
                 this.listbox.show_all();
             }
 
-            /*
-            } catch( GLib.Error e ) {
-                critical( "JSON error: %s", e.message );
-            }
-            */
         }
 
         public override void build( Gtk.Box box ) {

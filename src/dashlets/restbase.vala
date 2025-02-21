@@ -87,7 +87,7 @@ namespace Dashboard {
             } catch( GLib.Error e ) {
                 throw new 
                     DashletError.PARSE_MSG(
-                        "Invalid JSON response type: %s", e.message );
+                        "invalid JSON response type: %s", e.message );
             }
             // TODO: Handle parse failure.
             Json.Node msg_root = parser.get_root();

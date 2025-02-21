@@ -20,7 +20,8 @@ namespace DashSource {
     public errordomain UpdateError {
         OTHER,
         UNAUTHORIZED,
-        NOT_FOUND
+        NOT_FOUND,
+        TIMEOUT
     }
 
     public abstract class DashSource {
@@ -51,7 +52,7 @@ namespace DashSource {
 
         protected string fetch_curl(
             string url, string? custom_request, string? post_data,
-            string? accept, string? content_type
+            string? accept, string? content_type, long timeout
         ) throws UpdateError {
             var handle = new EasyHandle();
             unowned Curl.SList headers = null;
@@ -102,6 +103,9 @@ namespace DashSource {
             if( null != headers ) {
                 handle.setopt( Option.HTTPHEADER, headers );
             }
+            if( 0 < timeout ) {
+                handle.setopt( Option.TIMEOUT, timeout );
+            }
 
             StringBuilder response = new StringBuilder();
             handle.setopt( Option.WRITEFUNCTION, write_curl );
@@ -119,12 +123,12 @@ namespace DashSource {
                 headers.free_all();
             }
 
-            // TODO: Implement timeout.
-
             // Handle possible protocol error.
             long res = 0;
             handle.getinfo( Curl.Info.RESPONSE_CODE, out res );
-            if( 200 != res ) {
+            if( 0 == res ) {
+                throw new UpdateError.TIMEOUT( "timeout!" );
+            } else if( 200 != res ) {
                 throw new UpdateError.OTHER( "%ld: %s", res, response.str );
             }
 
@@ -174,7 +178,7 @@ namespace DashSource {
                                 dashlet.topic ),
                             custom_request, dashlet.get_source_post(),
                             dashlet.get_accept_type(),
-                            dashlet.get_content_type() );
+                            dashlet.get_content_type(), dashlet.get_timeout() );
 
                     debug( "response: %s", response );
 

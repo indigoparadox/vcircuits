@@ -13,6 +13,7 @@ namespace Dashboard {
         public string topic = null;
         public string source = null;
         public DashletBuilder builder = null;
+        protected long timeout = 0;
 
         protected Dashlet( Dashboard dashboard_in ) {
             this.dashboard = dashboard_in;
@@ -36,6 +37,11 @@ namespace Dashboard {
             this.title = config_obj.get_string_member( "title" );
             this.topic = config_obj.get_string_member( "topic" );
             this.source = config_obj.get_string_member( "source" );
+            if( config_obj.has_member( "timeout" ) ) {
+                this.timeout = (long)config_obj.get_int_member( "timeout" );
+            } else {
+                this.timeout = -1;
+            }
 
         }
 
@@ -49,6 +55,10 @@ namespace Dashboard {
 
         public virtual string? get_source_post() {
             return null;
+        }
+
+        public virtual long get_timeout() {
+            return this.timeout;
         }
 
         protected string parse_output_tokens( string msg ) {

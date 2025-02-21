@@ -60,7 +60,7 @@ namespace DashSource {
                 }
 
                 // Connection failure or not connected!
-                warning( "MQTT connection failed!" );
+                info( "MQTT not connected; connecting..." );
                 if( null == this.user || null != this.password.password ) {
                     info( "MQTT reconnecting (%s, %s, %d)...",
                         this.user, this.host, this.port );
@@ -70,7 +70,11 @@ namespace DashSource {
                     } else {
                         // First time connection.
                         this.m.username_pw_set( this.user, this.password.password );
-                        this.m.connect( this.host, (int)this.port, 60 );
+                        var m_res = 0;
+                        m_res = this.m.connect( this.host, (int)this.port, 60 );
+                        if( Mosquitto.Error.SUCCESS != m_res ) {
+                           error( "MQTT connection failed: %d", m_res );
+                        }
                     }
                 }
 
