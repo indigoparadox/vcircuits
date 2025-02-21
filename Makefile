@@ -38,6 +38,8 @@ all: circuits
 circuits: $(OBJECTS)
 	valac -o $@ $^ $(DEFINES) $(PACKAGES)
 
+clean: rm mvala
+
 .PHONY: clean
 
 clean:
